@@ -1,0 +1,176 @@
+<%- include('./header.ejs') %>
+<%- include('./partials/ui_styles.ejs') %>
+<%
+  const audienceLabel = {
+    all_users: 'All Users', all_drivers: 'All Drivers', everyone: 'Users + Drivers',
+    user: 'User', driver: 'Driver'
+  };
+  const typeBadge = { admin: 'bg-primary', payout: 'bg-success', system: 'bg-secondary' };
+%>
+
+<div class="app-body mt-4">
+  <div class="container-fluid">
+
+    <div class="mb-4">
+      <h4 class="fw-bold m-0">Send Notifications</h4>
+      <small class="text-muted">Messages appear in the notification inbox of the rider app and / or driver app</small>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-12 col-xl-5">
+        <div class="card uc-card">
+          <div class="card-header"><h6 class="m-0 fw-bold">New Notification</h6></div>
+          <div class="card-body">
+            <form method="POST" action="/push-notifications/send" id="notifyForm">
+              <label class="form-label fw-semibold">Send to</label>
+              <div class="row g-2 mb-3">
+                <% [
+                     ['all_users', 'All Users', 'bi-people', userCount + ' users'],
+                     ['all_drivers', 'All Drivers', 'bi-person-badge', driverCount + ' drivers'],
+                     ['everyone', 'Everyone', 'bi-broadcast', (userCount + driverCount) + ' people'],
+                     ['user', 'One User', 'bi-person', 'pick below'],
+                     ['driver', 'One Driver', 'bi-person-vcard', 'pick below']
+                   ].forEach(([val, label, icon, hint], i) => { %>
+                  <div class="col-6 col-md-4 col-xl-6 col-xxl-4">
+                    <input type="radio" class="btn-check" name="audience" id="aud_<%= val %>" value="<%= val %>" <%= i === 0 ? 'checked' : '' %>>
+                    <label class="btn btn-outline-primary w-100 text-start py-2" for="aud_<%= val %>" data-label="<%= label %>">
+                      <i class="bi <%= icon %> me-1"></i><%= label %>
+                      <div class="small opacity-75"><%= hint %></div>
+                    </label>
+                  </div>
+                <% }) %>
+              </div>
+
+              <div class="mb-3 d-none" id="userPicker">
+                <label class="form-label fw-semibold">User</label>
+                <select name="user_id" class="form-select">
+                  <option value="">Select user…</option>
+                  <% users.forEach(u => { %>
+                    <option value="<%= u.id %>"><%= u.name || 'User #' + u.id %> <%= u.phone ? '(' + u.phone + ')' : '' %></option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <div class="mb-3 d-none" id="driverPicker">
+                <label class="form-label fw-semibold">Driver</label>
+                <select name="driver_id" class="form-select">
+                  <option value="">Select driver…</option>
+                  <% drivers.forEach(d => { %>
+                    <option value="<%= d.id %>"><%= d.name || 'Driver #' + d.id %> <%= d.phone ? '(' + d.phone + ')' : '' %></option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Title</label>
+                <input type="text" name="title" class="form-control" maxlength="100" required placeholder="e.g. Weekend offer 🎉">
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Message</label>
+                <textarea name="body" class="form-control" rows="4" maxlength="1000" required placeholder="Write the notification text…"></textarea>
+                <div class="form-text"><span id="charCount">0</span>/1000</div>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100" id="sendBtn">
+                <i class="bi bi-send me-1"></i>Send Notification
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-xl-7">
+        <div class="card uc-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="m-0 fw-bold">Sent Notifications</h6>
+            <span class="badge bg-primary rounded-pill"><%= history.length %></span>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table id="historyTable" class="table align-middle custom-table m-0">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Sent To</th>
+                    <th>Notification</th>
+                    <th class="text-center">Read</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% history.forEach(n => { const reads = readsById[n.id] || 0; %>
+                    <tr>
+                      <td data-order="<%= new Date(n.created_at).getTime() %>"><span class="utc-to-ist small" data-time="<%= new Date(n.created_at).toISOString() %>"></span></td>
+                      <td>
+                        <span class="badge bg-light text-dark border"><%= audienceLabel[n.audience] || n.audience %></span>
+                        <% if (n.target_id) { %>
+                          <div class="small">
+                            <a class="text-decoration-none" href="<%= n.audience === 'driver' ? '/driver/' + n.target_id : '/users' %>">
+                              <%= (nameOf[n.audience] || {})[n.target_id] || '#' + n.target_id %>
+                            </a>
+                          </div>
+                        <% } %>
+                      </td>
+                      <td>
+                        <div class="fw-semibold">
+                          <%= n.title %>
+                          <% if (n.type !== 'admin') { %><span class="badge <%= typeBadge[n.type] || 'bg-secondary' %> ms-1"><%= n.type %></span><% } %>
+                        </div>
+                        <div class="small text-muted"><%= n.body %></div>
+                      </td>
+                      <td class="text-center" data-order="<%= reads %>">
+                        <% if (n.target_id) { %>
+                          <% if (reads) { %><i class="bi bi-check2-all text-success fs-5" title="Read"></i><% } else { %><i class="bi bi-check2 text-muted fs-5" title="Not read yet"></i><% } %>
+                        <% } else { %>
+                          <span class="fw-bold"><%= reads %></span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <form method="POST" action="/push-notifications/delete/<%= n.id %>" onsubmit="return confirm('Delete this notification? It will also disappear from the app inbox.')">
+                          <button class="btn btn-sm btn-light" title="Delete"><i class="bi bi-trash"></i></button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('./footer.ejs') %>
+<script>
+  $(function () {
+    $('#historyTable').DataTable({ order: [[0, 'desc']], pageLength: 10 });
+  });
+  (function () {
+    const form = document.getElementById('notifyForm');
+    const userPicker = document.getElementById('userPicker');
+    const driverPicker = document.getElementById('driverPicker');
+    function sync() {
+      const aud = form.querySelector('input[name="audience"]:checked').value;
+      userPicker.classList.toggle('d-none', aud !== 'user');
+      driverPicker.classList.toggle('d-none', aud !== 'driver');
+      userPicker.querySelector('select').required = aud === 'user';
+      driverPicker.querySelector('select').required = aud === 'driver';
+    }
+    form.querySelectorAll('input[name="audience"]').forEach(r => r.addEventListener('change', sync));
+    sync();
+
+    const body = form.querySelector('textarea[name="body"]');
+    body.addEventListener('input', () => { document.getElementById('charCount').textContent = body.value.length; });
+
+    form.addEventListener('submit', function (e) {
+      const label = form.querySelector('input[name="audience"]:checked').nextElementSibling.dataset.label;
+      if (!confirm('Send this notification to: ' + label + '?')) { e.preventDefault(); return; }
+      const btn = document.getElementById('sendBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Sending…';
+    });
+  })();
+</script>

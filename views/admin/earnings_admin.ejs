@@ -1,0 +1,132 @@
+<%- include('./header.ejs') %>
+<%- include('./partials/ui_styles.ejs') %>
+
+<div class="app-body mt-4">
+  <div class="container-fluid">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+      <div>
+        <h4 class="fw-bold m-0">Admin Commission</h4>
+        <small class="text-muted">Platform earnings from subscriptions and per-ride wallet charges</small>
+      </div>
+      <%- include('./partials/date_filter.ejs', { action: '/earnings/admin', range, extra: '' }) %>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile d-flex justify-content-between">
+          <div>
+            <div class="label">Total Earnings</div>
+            <div class="value">£<%= summary.total.toFixed(2) %></div>
+            <div class="hint"><%= range.fromStr %> → <%= range.toStr %></div>
+          </div>
+          <div class="icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-graph-up-arrow"></i></div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile d-flex justify-content-between">
+          <div>
+            <div class="label">Subscription Sales</div>
+            <div class="value">£<%= summary.subscriptionRevenue.toFixed(2) %></div>
+            <div class="hint"><%= summary.subscriptionCount %> plan(s) sold</div>
+          </div>
+          <div class="icon bg-success bg-opacity-10 text-success"><i class="bi bi-card-checklist"></i></div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile d-flex justify-content-between">
+          <div>
+            <div class="label">Ride Commission</div>
+            <div class="value">£<%= summary.rideCommission.toFixed(2) %></div>
+            <div class="hint"><%= summary.rideCount %> ride(s) charged from wallet</div>
+          </div>
+          <div class="icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-taxi-front"></i></div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile d-flex justify-content-between">
+          <div>
+            <div class="label">Driver Wallets (Total)</div>
+            <div class="value">£<%= summary.walletBalance.toFixed(2) %></div>
+            <div class="hint">
+              Recharged £<%= summary.rechargeTotal.toFixed(2) %> • Paid out £<%= summary.payoutTotal.toFixed(2) %>
+            </div>
+          </div>
+          <div class="icon bg-info bg-opacity-10 text-info"><i class="bi bi-wallet2"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <% if (summary.pendingPayouts > 0) { %>
+      <div class="alert alert-warning d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-exclamation-circle me-2"></i><%= summary.pendingPayouts %> payout request(s) waiting for approval.</span>
+        <a href="/payout-requests?status=pending" class="btn btn-sm btn-warning">Review</a>
+      </div>
+    <% } %>
+
+    <div class="card uc-card mb-4">
+      <div class="card-header"><h6 class="m-0 fw-bold">Daily Earnings</h6></div>
+      <div class="card-body"><div id="earningsChart" style="min-height: 320px;"></div></div>
+    </div>
+
+    <div class="card uc-card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="m-0 fw-bold">Earning Entries</h6>
+        <span class="badge bg-primary rounded-pill"><%= entries.length %> entries</span>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table id="earningsTable" class="table align-middle custom-table m-0">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Driver</th>
+                <th>Source</th>
+                <th>Reference</th>
+                <th class="text-end">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% entries.forEach(e => { %>
+                <tr>
+                  <td data-order="<%= new Date(e.date).getTime() %>"><span class="utc-to-ist" data-time="<%= new Date(e.date).toISOString() %>"></span></td>
+                  <td><a href="/driver/<%= e.driver_id %>" class="fw-semibold text-decoration-none"><%= e.driver %></a></td>
+                  <td>
+                    <span class="badge <%= e.source === 'Subscription' ? 'bg-success' : 'bg-warning text-dark' %>"><%= e.source %></span>
+                  </td>
+                  <td class="text-muted"><%= e.reference %></td>
+                  <td class="text-end amount-credit">£<%= e.amount.toFixed(2) %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('./footer.ejs') %>
+<script>
+  $(function () {
+    $('#earningsTable').DataTable({ order: [[0, 'desc']], pageLength: 25 });
+  });
+  (function () {
+    const chart = <%- JSON.stringify(chart) %>;
+    new ApexCharts(document.querySelector('#earningsChart'), {
+      chart: { type: 'bar', height: 320, stacked: true, toolbar: { show: false } },
+      series: [
+        { name: 'Subscriptions', data: chart.subscription },
+        { name: 'Ride Commission', data: chart.ride }
+      ],
+      xaxis: { categories: chart.days, labels: { rotate: -45, hideOverlappingLabels: true } },
+      yaxis: { labels: { formatter: v => '£' + v.toFixed(0) } },
+      colors: ['#198754', '#f0ad4e'],
+      dataLabels: { enabled: false },
+      plotOptions: { bar: { columnWidth: '60%', borderRadius: 3 } },
+      tooltip: { y: { formatter: v => '£' + v.toFixed(2) } },
+      legend: { position: 'top' }
+    }).render();
+  })();
+</script>

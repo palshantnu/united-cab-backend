@@ -1,0 +1,136 @@
+<%- include('./header.ejs') %>
+<%- include('./partials/ui_styles.ejs') %>
+
+<div class="app-body mt-4">
+  <div class="container-fluid">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+      <div>
+        <h4 class="fw-bold m-0">Payout Requests</h4>
+        <small class="text-muted">Drivers withdrawing their wallet balance. Approving deducts the amount from the driver's wallet and notifies the driver.</small>
+      </div>
+      <div class="btn-group">
+        <% ['all', 'pending', 'approved', 'rejected'].forEach(s => { %>
+          <a href="/payout-requests<%= s === 'all' ? '' : '?status=' + s %>"
+             class="btn btn-sm <%= status === s ? 'btn-primary' : 'btn-outline-primary' %> text-capitalize"><%= s %></a>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <% [['pending', 'Pending', 'warning', 'bi-hourglass-split'], ['approved', 'Paid Out', 'success', 'bi-check2-circle'], ['rejected', 'Rejected', 'danger', 'bi-x-circle']].forEach(([key, label, color, icon]) => { %>
+        <div class="col-12 col-md-4">
+          <div class="stat-tile d-flex justify-content-between">
+            <div>
+              <div class="label"><%= label %></div>
+              <div class="value">£<%= stats[key].total.toFixed(2) %></div>
+              <div class="hint"><%= stats[key].count %> request(s)</div>
+            </div>
+            <div class="icon bg-<%= color %> bg-opacity-10 text-<%= color %>"><i class="bi <%= icon %>"></i></div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <div class="card uc-card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table id="payoutTable" class="table align-middle custom-table m-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Driver</th>
+                <th>Amount</th>
+                <th>Wallet Now</th>
+                <th>Method / Account</th>
+                <th>Note</th>
+                <th>Requested</th>
+                <th>Status</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% requests.forEach(r => { const amt = parseFloat(r.amount); const wallet = parseFloat(r.driver?.wallet) || 0; %>
+                <tr>
+                  <td class="text-muted fw-bold">#<%= r.id %></td>
+                  <td>
+                    <a href="/driver/<%= r.driver_id %>" class="fw-semibold text-decoration-none"><%= r.driver?.name || 'Unknown Driver' %></a>
+                    <div class="small text-muted"><%= r.driver?.phone || '' %></div>
+                  </td>
+                  <td class="fw-bold">£<%= amt.toFixed(2) %></td>
+                  <td class="<%= r.status === 'pending' && wallet < amt ? 'text-danger fw-bold' : '' %>">£<%= wallet.toFixed(2) %></td>
+                  <td>
+                    <div><%= r.payout_method || '-' %></div>
+                    <div class="small text-muted text-break" style="max-width: 220px;"><%= r.account_details || '' %></div>
+                  </td>
+                  <td class="small">
+                    <%= r.request_note || '' %>
+                    <% if (r.admin_note) { %><div class="text-muted"><i class="bi bi-person-gear"></i> <%= r.admin_note %></div><% } %>
+                  </td>
+                  <td data-order="<%= new Date(r.requested_at).getTime() %>">
+                    <span class="utc-to-ist small" data-time="<%= new Date(r.requested_at).toISOString() %>"></span>
+                  </td>
+                  <td><span class="status-badge badge-<%= r.status %>"><%= r.status %></span></td>
+                  <td class="text-center">
+                    <% if (r.status === 'pending') { %>
+                      <div class="d-flex justify-content-center gap-2">
+                        <form method="POST" action="/payout-requests/update-status/<%= r.id %>"
+                              onsubmit="return confirm('Approve payout of £<%= amt.toFixed(2) %>? This will deduct it from the driver wallet.')">
+                          <input type="hidden" name="status" value="approved">
+                          <button type="submit" class="btn btn-success btn-sm rounded-pill px-3" <%= wallet < amt ? 'disabled title="Insufficient wallet balance"' : '' %>>
+                            <i class="bi bi-check2-circle me-1"></i>Approve
+                          </button>
+                        </form>
+                        <button type="button" class="btn btn-danger btn-sm rounded-pill px-3"
+                                data-bs-toggle="modal" data-bs-target="#rejectModal" data-id="<%= r.id %>">
+                          <i class="bi bi-x-circle me-1"></i>Reject
+                        </button>
+                      </div>
+                    <% } else { %>
+                      <span class="text-muted small">
+                        Processed
+                        <% if (r.processed_at) { %><br><span class="utc-to-ist" data-time="<%= new Date(r.processed_at).toISOString() %>"></span><% } %>
+                      </span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal fade" id="rejectModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="POST" id="rejectForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Reject payout request</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="status" value="rejected">
+        <label class="form-label">Reason (sent to the driver)</label>
+        <textarea name="admin_note" class="form-control" rows="3" placeholder="e.g. Bank details are incorrect"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-danger">Reject</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('./footer.ejs') %>
+<script>
+  $(function () {
+    $('#payoutTable').DataTable({ order: [[6, 'desc']], pageLength: 25 });
+  });
+  document.getElementById('rejectModal').addEventListener('show.bs.modal', function (e) {
+    const id = e.relatedTarget.getAttribute('data-id');
+    document.getElementById('rejectForm').action = '/payout-requests/update-status/' + id;
+  });
+</script>

@@ -1,0 +1,94 @@
+<%- include('./header.ejs') %>
+<%- include('./partials/ui_styles.ejs') %>
+<%
+  const types = [['all', 'All types'], ['ride', 'Ride charges'], ['recharge', 'Wallet recharges'], ['subscription', 'Subscriptions'], ['payout', 'Payouts']];
+  let extra = '<div><label class="form-label small text-muted mb-1">Type</label><select name="type" class="form-select form-select-sm">';
+  types.forEach(([v, l]) => { extra += `<option value="${v}" ${type === v ? 'selected' : ''}>${l}</option>`; });
+  extra += '</select></div><div><label class="form-label small text-muted mb-1">Driver</label><select name="driver_id" class="form-select form-select-sm"><option value="">All drivers</option>';
+  drivers.forEach(d => {
+    const name = String(d.name || 'Driver #' + d.id).replace(/[<>&"]/g, '');
+    extra += `<option value="${d.id}" ${driverId === d.id ? 'selected' : ''}>${name}</option>`;
+  });
+  extra += '</select></div>';
+
+  const credits = transactions.filter(t => t.direction === 'credit' && ['completed', 'approved'].includes(t.status)).reduce((s, t) => s + t.amount, 0);
+  const debits = transactions.filter(t => t.direction === 'debit' && ['completed', 'approved', 'active', 'expired'].includes(t.status)).reduce((s, t) => s + t.amount, 0);
+%>
+
+<div class="app-body mt-4">
+  <div class="container-fluid">
+
+    <div class="mb-3">
+      <h4 class="fw-bold m-0">Transactions</h4>
+      <small class="text-muted">Every money movement on driver accounts — recharges, ride charges, subscriptions and payouts</small>
+    </div>
+
+    <div class="card uc-card mb-4">
+      <div class="card-body">
+        <%- include('./partials/date_filter.ejs', { action: '/transaction-history', range, extra }) %>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-4">
+        <div class="stat-tile">
+          <div class="label">Transactions</div>
+          <div class="value"><%= transactions.length %></div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="stat-tile">
+          <div class="label">Credited to wallets</div>
+          <div class="value text-success">£<%= credits.toFixed(2) %></div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="stat-tile">
+          <div class="label">Debited from drivers</div>
+          <div class="value text-danger">£<%= debits.toFixed(2) %></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card uc-card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table id="txTable" class="table align-middle custom-table m-0">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Driver</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th class="text-end">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% transactions.forEach(t => { %>
+                <tr>
+                  <td data-order="<%= new Date(t.date).getTime() %>"><span class="utc-to-ist small" data-time="<%= new Date(t.date).toISOString() %>"></span></td>
+                  <td><a href="/driver/<%= t.driver_id %>" class="fw-semibold text-decoration-none"><%= t.driver %></a></td>
+                  <td><%= t.type %></td>
+                  <td class="small text-muted"><%= t.description %></td>
+                  <td><span class="status-badge badge-<%= t.status %>"><%= t.status %></span></td>
+                  <td class="text-end amount-<%= t.direction %>" data-order="<%= t.amount %>">
+                    <%= t.direction === 'credit' ? '+' : t.direction === 'debit' ? '−' : '' %>£<%= t.amount.toFixed(2) %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('./footer.ejs') %>
+<script>
+  $(function () {
+    $('#txTable').DataTable({ order: [[0, 'desc']], pageLength: 25 });
+  });
+</script>

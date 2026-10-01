@@ -1,0 +1,206 @@
+<%- include('./header.ejs') %>
+<div class="app-body">
+  <div class="container-fluid py-4">
+    <div class="row mb-4 align-items-center">
+      <div class="col-sm-6">
+        <h3 class="fw-bold text-dark mb-1">User Directory</h3>
+        <p class="text-muted mb-0">Manage and monitor all registered users from one place.</p>
+      </div>
+      <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+        <button type="button" class="btn btn-primary px-4 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#addUserModal">
+          <i class="bi bi-person-plus-fill me-2"></i>Add New User
+        </button>
+      </div>
+    </div>
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" id="tripsTable">
+            <thead class="bg-light border-bottom">
+              <tr>
+                <th class="ps-4 py-3 text-uppercase small fw-bold text-secondary">User Information</th>
+                <th class="py-3 text-uppercase small fw-bold text-secondary">Contact Details</th>
+                <th class="py-3 text-uppercase small fw-bold text-secondary">Location</th>
+                <th class="py-3 text-uppercase small fw-bold text-secondary">Wallet Balance</th>
+                <th class="py-3 text-uppercase small fw-bold text-secondary">Registered On</th>
+                <th class="py-3 text-uppercase small fw-bold text-secondary text-center">Status</th>
+                <th class="py-3 text-uppercase small fw-bold text-secondary text-end pe-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="border-top-0">
+              <% users.forEach((user) => { %>
+              <tr>
+                <td class="ps-4">
+                  <div class="d-flex align-items-center">
+                      <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 42px; height: 42px; font-weight: 600;">
+                      <%= (user.name && user.name.length > 0) ? user.name.charAt(0).toUpperCase() : 'U' %>
+                    </div>
+
+                    <div>
+                      <div class="fw-bold text-dark mb-0"><%= user.name || 'Unknown User' %></div>
+                      <small class="text-muted"><%= user.email %></small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="text-dark"><%= user.phone %></div>
+                  <small class="text-muted small">Registered Mobile</small>
+                </td>
+                <td>
+                  <div class="text-truncate text-muted" style="max-width: 180px;"><%= user.address || 'No Address' %></div>
+                  <span class="badge bg-light text-dark fw-normal border mt-1"><%= user.postcode || '-' %></span>
+                </td>
+                <td>
+                  <div class="fw-bold text-primary">£<%= user.wallet_balance || 0 %></div>
+                  <small class="text-muted small">Available Credit</small>
+                </td>
+                <td>
+                  <% if (user.created_at) { %>
+                    <div class="text-dark"><%= new Date(user.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></div>
+                    <small class="text-muted small"><%= new Date(user.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %></small>
+                  <% } else { %>
+                    <span class="text-muted">-</span>
+                  <% } %>
+                </td>
+                <td class="text-center">
+                  <% if (user.status === 1) { %>
+                    <span class="badge rounded-pill px-3 py-2 bg-success-subtle text-success border border-success">
+                      <i class="bi bi-check-circle-fill me-1 small"></i> Active
+                    </span>
+                  <% } else { %>
+                    <span class="badge rounded-pill px-3 py-2 bg-danger-subtle text-danger border border-danger">
+                      <i class="bi bi-x-circle-fill me-1 small"></i> Inactive
+                    </span>
+                  <% } %>
+                </td>
+                <td class="text-end pe-4">
+                  <div class="dropdown">
+                    <button class="btn btn-light btn-sm rounded-3 border px-3" type="button" data-bs-toggle="dropdown">
+                      Options
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                      <li><a class="dropdown-item py-2 edit-user-btn" href="#"
+                        data-id="<%= user.id %>"
+                        data-name="<%= user.name || '' %>"
+                        data-email="<%= user.email || '' %>"
+                        data-phone="<%= user.phone || '' %>"
+                        data-status="<%= user.status %>"
+                        data-bs-toggle="modal" data-bs-target="#editUserModal">
+                        <i class="bi bi-pencil me-2 text-primary"></i> Edit Profile
+                      </a></li>
+                      <li><a class="dropdown-item py-2 text-danger" href="#"><i class="bi bi-trash me-2"></i> Delete User</a></li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer bg-white py-3 border-top-0 rounded-bottom-4">
+        <div class="d-flex justify-content-between align-items-center px-2">
+          <span class="text-muted small">Total Users: <b><%= users.length %></b></span>
+          <nav>
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item disabled"><a class="page-link border-0 rounded-circle me-1" href="#">&lt;</a></li>
+              <li class="page-item active"><a class="page-link border-0 rounded-circle me-1" href="#">1</a></li>
+              <li class="page-item"><a class="page-link border-0 rounded-circle" href="#">&gt;</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="fw-bold px-2 pt-2">Register New User</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-secondary">Full Name</label>
+              <input type="text" class="form-control bg-light border-0 py-2 rounded-3" placeholder="Enter name">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-secondary">Email Address</label>
+              <input type="email" class="form-control bg-light border-0 py-2 rounded-3" placeholder="user@domain.com">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-secondary">Phone Number</label>
+              <input type="text" class="form-control bg-light border-0 py-2 rounded-3" placeholder="+91 0000 0000">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-secondary">Pincode</label>
+              <input type="text" class="form-control bg-light border-0 py-2 rounded-3" placeholder="110001">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold text-secondary">Complete Address</label>
+              <textarea class="form-control bg-light border-0 py-2 rounded-3" rows="3" placeholder="Building, Street, Area..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 p-4 pt-0">
+          <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary px-4 fw-bold">Create Profile</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="fw-bold px-2 pt-2">Edit User Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="editUserForm" action="" method="POST">
+        <div class="modal-body p-4">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-secondary">Full Name</label>
+              <input type="text" name="name" id="edit_name" class="form-control bg-light border-0 py-2 rounded-3" placeholder="Enter name" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-secondary">Email Address</label>
+              <input type="email" name="email" id="edit_email" class="form-control bg-light border-0 py-2 rounded-3" placeholder="user@domain.com" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-secondary">Phone Number</label>
+              <input type="text" name="phone" id="edit_phone" class="form-control bg-light border-0 py-2 rounded-3" placeholder="+44 0000 0000" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-secondary">Status</label>
+              <select name="status" id="edit_status" class="form-select bg-light border-0 py-2 rounded-3">
+                <option value="1">Active</option>
+                <option value="0">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 p-4 pt-0">
+          <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary px-4 fw-bold">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.edit-user-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var id = this.dataset.id;
+      document.getElementById('edit_name').value = this.dataset.name;
+      document.getElementById('edit_email').value = this.dataset.email;
+      document.getElementById('edit_phone').value = this.dataset.phone;
+      document.getElementById('edit_status').value = this.dataset.status;
+      document.getElementById('editUserForm').action = '/user/update/' + id;
+    });
+  });
+</script>
+<%- include('./footer.ejs') %>

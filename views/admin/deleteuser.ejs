@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Delete User Input</title>
+  <link rel="shortcut icon" href="assets/images/logo.png" />
+  <!-- CSS -->
+  <link rel="stylesheet" href="assets/fonts/bootstrap/bootstrap-icons.css" />
+  <link rel="stylesheet" href="assets/css/main.min.css" />
+  <link rel="stylesheet" href="assets/vendor/overlay-scroll/OverlayScrollbars.min.css" />
+</head>
+<body>
+  <!-- Container start -->
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-4 col-lg-5 col-sm-6 col-12">
+        <form action="/deleteUserInput" method="POST" class="my-5">
+          <div class="border rounded-2 p-4 mt-5">
+            <div class="login-form">
+              <a href="index.html" class="mb-4 d-flex align-items-center justify-content-center">
+                <img src="assets/images/logo1.png" class="img-fluid login-logo" alt="Cab Admin Dashboard" />
+              </a>
+              <h2 class="fw-bold mb-5 text-center">Delete User Input</h2>
+
+              <% if (success && success.length > 0) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                  <%= success %>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              <% } %>
+
+              <% if (error && error.length > 0) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  <%= error %>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              <% } %>
+
+              <!-- Input for Playstore/App URL -->
+              <!-- <div class="mb-3">
+                <label class="form-label">Playstore/App URL</label>
+                <input type="url" class="form-control" name="app_url" placeholder="Enter Playstore/App URL to delete" required />
+              </div> -->
+
+              <!-- User ID or Email for confirmation -->
+              <div class="mb-3">
+                <label class="form-label">User Email / ID</label>
+                <input type="text" class="form-control" name="user_identifier" placeholder="Enter user email or ID" required />
+              </div>
+
+              <!-- Submit -->
+              <div class="d-grid py-3 mt-4">
+                <button type="submit" class="btn btn-lg btn-danger">
+                  DELETE
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- Container end -->
+
+  <!-- JavaScript -->
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/overlay-scroll/jquery.overlayScrollbars.min.js"></script>
+  <script src="assets/vendor/overlay-scroll/custom-scrollbar.js"></script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<%- include('./header.ejs')  %>
+
+<div class="app-body">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="card-title">Subscription Plans</h4>
+            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addPlanModal">
+              <i class="bi bi-plus-lg"></i> Add Plan
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="table-outer">
+              <div class="table-responsive">
+                <table id="subscriptionTable" class="table align-middle custom-table m-0">
+                  <thead>
+                    <tr class="bg-light">
+                      <th>#</th>
+                      <th>Plan Name</th>
+                      <th>Price (€)</th>
+                      <th>Duration (Days)</th>
+                      <th>Description</th>
+                      <th>Mile</th>
+                      <th>Created At</th>
+                      <th style="width:90px;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% subscriptions.forEach((plan, index) => { %>
+                      <tr>
+                        <td><%= index + 1 %></td>
+                        <td><%= plan.name %></td>
+                        <td><%= plan.price %></td>
+                        <td><%= plan.duration_days %></td>
+                        <td><%= plan.description || '-' %></td>
+                        <td><%= plan.mile || '-' %></td>
+                        <td><%= new Date(plan.created_at).toISOString().split('T')[0] %></td>
+                        <td>
+                          <a href="/subscription/edit/<%= plan.id %>" 
+                            class="btn btn-outline-primary btn-sm" 
+                            data-bs-toggle="tooltip" 
+                            title="Edit">
+                            <i class="bi bi-pencil-square"></i>
+                          </a>
+                          <a href="/subscriptions/delete/<%= plan.id %>" 
+                            class="btn btn-outline-danger btn-sm" 
+                            onclick="return confirm('Are you sure you want to delete this subscription plan?')" 
+                            data-bs-toggle="tooltip" 
+                            title="Delete">
+                            <i class="bi bi-trash3"></i>
+                          </a>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Plan Modal -->
+<div class="modal fade" id="addPlanModal" tabindex="-1" aria-labelledby="addPlanModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form action="/subscription/add" method="POST" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addPlanModalLabel">Add Subscription Plan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="planName" class="form-label">Plan Name</label>
+          <input type="text" name="name" class="form-control" id="planName" required>
+        </div>
+        <div class="mb-3">
+          <label for="price" class="form-label">Price (£)</label>
+          <input type="number" step="0.01" name="price" class="form-control" id="price" required>
+        </div>
+        <div class="mb-3">
+          <label for="duration" class="form-label">Duration (Days)</label>
+          <input type="number" name="duration_days" class="form-control" id="duration" step="1" min="1" required>
+        </div>
+        <div class="mb-3">
+          <label for="miles" class="form-label">Miles (Days)</label>
+          <input type="number" name="mile" class="form-control" id="miles" step="1" min="1" required>
+        </div>
+        <div class="mb-3">
+          <label for="description" class="form-label">Description</label>
+          <textarea name="description" class="form-control" id="description" rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Save Plan</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('./footer.ejs')  %>

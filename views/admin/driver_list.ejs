@@ -1,0 +1,218 @@
+<%- include('./header.ejs') %>
+<style>
+  .driver-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .card-header {
+    background: #ffffff;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 1.5rem;
+  }
+
+  .custom-table {
+    border: none !important;
+  }
+
+  .custom-table thead th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    padding: 15px;
+    border: none;
+  }
+
+  .custom-table tbody tr {
+    transition: all 0.3s ease;
+  }
+
+  .custom-table tbody tr:hover {
+    background-color: #fcfcfc;
+    transform: scale(1.002);
+  }
+
+  .custom-table td {
+    padding: 15px !important;
+    vertical-align: middle;
+    border-color: #f1f1f1;
+    color: #555;
+  }
+
+  .badge {
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 0.75rem;
+  }
+
+  /* Action Buttons Style */
+  .btn-action {
+    width: 35px;
+    height: 35px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: 0.2s;
+    border: none;
+  }
+
+  .btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+
+  /* Status Indicator */
+  .status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+  }
+
+  /* DataTables Search/Pagination UI Fix */
+  .dataTables_wrapper .dataTables_filter input {
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    padding: 6px 15px;
+    margin-bottom: 15px;
+  }
+</style>
+
+<div class="app-body mt-4">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card driver-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="card-title mb-0" style="font-weight: 700; color: #333;">Driver Management</h4>
+              <p class="text-muted small mb-0">Manage and monitor your fleet drivers</p>
+            </div>
+            <span class="badge bg-primary rounded-pill"><%= drivers.length %> Drivers</span>
+          </div>
+          <div class="card-body">
+            <div class="table-outer">
+              <div class="table-responsive">
+                <table id="tripsTable" class="table align-middle custom-table m-0">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th class="text-start">Driver Info</th>
+                      <th>Wallet</th>
+                      <th>Account</th>
+                      <th>Duty Status</th>
+                      <th>Vehicle Details</th>
+                      <th>Registered On</th>
+                      <th class="text-end">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% drivers.forEach((driver, index) => { %>
+                      <tr>
+                        <td class="text-muted fw-bold">#<%= index + 1 %></td>
+                        <td class="text-start">
+                          <div class="d-flex align-items-center">
+                            <div class="avatar-sm me-3 bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                              <i class="fas fa-user text-primary"></i>
+                            </div>
+                            <div>
+                              <div class="fw-bold text-dark"><%= driver.name %></div>
+                              <div class="small text-muted"><%= driver.phone %></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="fw-bold text-dark">
+                            £<%= (parseFloat(driver.wallet) || 0).toFixed(2) %>
+                          </div>
+                        </td>
+                        <td>
+                          <% if (driver.status == 2) { %>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">On Trip</span>
+                          <% } else if (driver.status == 1) { %>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                          <% } else { %>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Inactive</span>
+                          <% } %>
+                        </td>
+                        <td>
+                          <% if (driver.online_status == 1) { %>
+                            <span class="text-success small fw-bold">
+                              <span class="status-indicator bg-success"></span> Online
+                            </span>
+                          <% } else { %>
+                            <span class="text-muted small">
+                              <span class="status-indicator bg-secondary"></span> Offline
+                            </span>
+                          <% } %>
+                        </td>
+                        <td>
+                          <div class="small">
+                            <span class="fw-bold text-dark"><%= driver.vehicle_number || '-' %></span><br>
+                            <span class="text-muted"><%= driver.VehicleType?.type_name || 'N/A' %> (<%= driver.VehicleType?.shift_type || 'N/A' %>)</span>
+                          </div>
+                        </td>
+                        <td>
+                          <% if (driver.created_at) { %>
+                            <div class="small fw-bold text-dark">
+                              <%= new Date(driver.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                            </div>
+                            <div class="small text-muted">
+                              <%= new Date(driver.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
+                            </div>
+                          <% } else { %>
+                            <span class="text-muted small">-</span>
+                          <% } %>
+                        </td>
+                        <td class="text-end">
+                          <div class="d-flex justify-content-end gap-2">
+                            <a href="/driver/<%= driver.id %>" class="btn btn-action btn-info" title="View">
+                              <i class="fas fa-eye text-white"></i>
+                            </a>
+
+                            <a href="/driver/edit/<%= driver.id %>" class="btn btn-action btn-warning" title="Edit">
+                              <i class="fas fa-pencil-alt text-white"></i>
+                            </a>
+
+                            <% if (driver.status != 0) { %>
+                              <a href="/driver/status/<%= driver.id %>" class="btn btn-action btn-danger"
+                                 title="Deactivate" onclick="return confirm('Deactivate this driver?')">
+                                <i class="fas fa-power-off"></i>
+                              </a>
+                            <% } else { %>
+                              <a href="/driver/status/<%= driver.id %>" class="btn btn-action btn-success"
+                                 title="Activate" onclick="return confirm('Activate this driver?')">
+                                <i class="fas fa-check"></i>
+                              </a>
+                            <% } %>
+
+                            <a href="/admin/driver/delete/<%= driver.id %>" class="btn btn-action btn-outline-danger" 
+                               title="Delete" onclick="return confirm('Delete permanently?')">
+                              <i class="fas fa-trash-alt"></i>
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('./footer.ejs') %>

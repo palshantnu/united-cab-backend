@@ -1,0 +1,51 @@
+<%- include('./header.ejs') %>
+
+<div class="app-body">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Edit Holiday</h4>
+          </div>
+          <div class="card-body">
+            <form action="/holidays/update/<%= holiday.id %>" method="POST">
+              <div class="row">
+                <!-- Holiday Name -->
+                <div class="col-md-6 mb-3">
+                  <label for="holidayName" class="form-label">Holiday Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="holidayName"
+                    name="name"
+                    value="<%= holiday.name %>"
+                    required
+                  />
+                </div>
+                <!-- Holiday Date -->
+                <div class="col-md-6 mb-3">
+                  <label for="holidayDate" class="form-label">Holiday Date</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="holidayDate"
+                    name="date"
+                    value="<%= holiday.date ? moment(holiday.date).format('YYYY-MM-DD') : '' %>"
+                    required
+                  />
+                </div>
+                <!-- Submit Button -->
+                <div class="col-12">
+                  <button type="submit" class="btn btn-primary">Update Holiday</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('./footer.ejs') %>

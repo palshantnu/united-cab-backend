@@ -1,0 +1,155 @@
+<%- include('./header.ejs') %>
+<style>
+    .cms-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        background: #fff;
+        padding: 20px;
+    }
+
+    /* Tab Styling */
+    .nav-tabs-custom {
+        border-bottom: 2px solid #f1f1f1;
+        margin-bottom: 30px;
+        gap: 10px;
+    }
+
+    .nav-tabs-custom .nav-link {
+        border: none;
+        color: #6c757d;
+        font-weight: 600;
+        padding: 12px 25px;
+        border-radius: 10px 10px 0 0;
+        transition: 0.3s;
+    }
+
+    .nav-tabs-custom .nav-link.active {
+        color: #0d6efd;
+        background: rgba(13, 110, 253, 0.05);
+        border-bottom: 3px solid #0d6efd;
+    }
+
+    .nav-tabs-custom .nav-link:hover:not(.active) {
+        background: #f8f9fa;
+        color: #333;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #495057;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-save {
+        padding: 10px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: 0.3s;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+</style>
+<div class="app-body mt-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="cms-card">
+                    <div class="mb-4">
+                        <h3 class="fw-bold text-dark">Content Management System</h3>
+                        <p class="text-muted small">Update your app's legal pages and support information</p>
+                    </div>
+                    <ul class="nav nav-tabs nav-tabs-custom" id="cmsTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="terms-tab" data-bs-toggle="tab" href="#terms" role="tab">
+                                <i class="fas fa-file-contract"></i> Terms & Conditions
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="privacy-tab" data-bs-toggle="tab" href="#privacy" role="tab">
+                                <i class="fas fa-user-shield"></i> Privacy Policy
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="help-tab" data-bs-toggle="tab" href="#help" role="tab">
+                                <i class="fas fa-headset"></i> Help & Support
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content mt-3" id="cmsTabsContent">
+                        <div class="tab-pane fade show active" id="terms" role="tabpanel">
+                            <form action="/cms/save" method="POST">
+                                <input type="hidden" name="page_type" value="terms">
+                                <div class="mb-4">
+                                    <label class="form-label">Page Title</label>
+                                    <input type="text" name="title" class="form-control form-control-lg" 
+                                           placeholder="e.g. Terms of Service" value="<%= cms.terms?.title || '' %>">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">Page Content</label>
+                                    <textarea name="content" class="form-control editor" rows="10"><%= cms.terms?.content || '' %></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-save">
+                                    <i class="fas fa-save"></i> Save Terms & Conditions
+                                </button>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="privacy" role="tabpanel">
+                            <form action="/cms/save" method="POST">
+                                <input type="hidden" name="page_type" value="privacy">
+                                <div class="mb-4">
+                                    <label class="form-label">Page Title</label>
+                                    <input type="text" name="title" class="form-control form-control-lg" 
+                                           value="<%= cms.privacy?.title || '' %>">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">Page Content</label>
+                                    <textarea name="content" class="form-control editor" rows="10"><%= cms.privacy?.content || '' %></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-success btn-save">
+                                    <i class="fas fa-save"></i> Save Privacy Policy
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="tab-pane fade" id="help" role="tabpanel">
+                            <form action="/cms/save" method="POST">
+                                <input type="hidden" name="page_type" value="help">
+                                <div class="mb-4">
+                                    <label class="form-label">Page Title</label>
+                                    <input type="text" name="title" class="form-control form-control-lg" 
+                                           value="<%= cms.help?.title || '' %>">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">Page Content</label>
+                                    <textarea name="content" class="form-control editor" rows="10"><%= cms.help?.content || '' %></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-warning btn-save text-white">
+                                    <i class="fas fa-save"></i> Save Help & Support
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>
+<script>
+    var editors = document.querySelectorAll('.editor');
+    editors.forEach(function(editor) {
+        CKEDITOR.replace(editor);
+    });
+</script>
+<%- include('./footer.ejs') %>

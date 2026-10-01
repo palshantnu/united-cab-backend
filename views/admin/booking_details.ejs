@@ -1,0 +1,173 @@
+<%- include('./header.ejs') %>
+
+<style>
+    .info-label { color: #6c757d; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+    .info-value { font-weight: 600; color: #333; }
+    .card { border: none; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1); border-radius: 12px; }
+    .card-header { background-color: #f8f9fa; border-bottom: 1px solid #eee; padding: 1.5rem; border-radius: 12px 12px 0 0 !important; }
+    .section-title { border-left: 4px solid #007bff; padding-left: 10px; margin-bottom: 20px; color: #007bff; font-weight: bold; }
+    .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+    .badge-completed { background: #d4edda; color: #155724; }
+    .badge-pending { background: #fff3cd; color: #856404; }
+    .badge-cancelled { background: #f8d7da; color: #721c24; }
+    .type-indicator { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: #e9ecef; color: #495057; margin-left: 10px; }
+</style>
+
+<div class="app-body">
+    <div class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="m-0 fw-bold d-inline">Booking #<%= booking.id %></h4>
+                            <span class="type-indicator text-uppercase">
+                                <i class="fa fa-tag me-1"></i><%= booking.booking_type || 'Instant' %>
+                            </span>
+                        </div>
+                        <span class="status-badge badge-<%= booking.status.toLowerCase() %>">
+                            <%= booking.status.toUpperCase() %>
+                        </span>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="section-title">Booking Timeline</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <div class="p-3 border rounded bg-light shadow-sm">
+                                            <div class="info-label text-primary">Booked On</div>
+                                            <div class="info-value">
+                                                <span class="utc-to-ist" data-time="<%= booking.created_at %>">Loading...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-3 border rounded bg-light border-primary shadow-sm">
+                                            <div class="info-label text-primary">Scheduled For</div>
+                                            <div class="info-value">
+                                                <span class="utc-to-ist" data-time="<%= booking.scheduled_at %>">Loading...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-3 border rounded bg-light shadow-sm">
+                                            <div class="info-label text-primary">Completion Time</div>
+                                            <div class="info-value">
+                                                <% if(booking.status === 'completed') { %>
+                                                    <span class="utc-to-ist" data-time="<%= booking.completed_at %>">Loading...</span>
+                                                <% } else { %>
+                                                    In Progress
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6 border-end">
+                                <h5 class="section-title">Route Details</h5>
+                                <div class="mb-3 pe-3">
+                                    <div class="info-label">Pickup Address</div>
+                                    <div class="info-value text-wrap"><%= booking.pickup_address %></div>
+                                    <small class="text-muted"><i class="fa fa-map-marker-alt"></i> <%= booking.pickup_lat %>, <%= booking.pickup_lng %></small>
+                                </div>
+                                <div class="mb-3 pe-3">
+                                    <div class="info-label">Dropoff Address</div>
+                                    <div class="info-value text-wrap"><%= booking.dropoff_address %></div>
+                                    <small class="text-muted"><i class="fa fa-flag-checkered"></i> <%= booking.dropoff_lat %>, <%= booking.dropoff_lng %></small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 ps-md-4">
+                                <h5 class="section-title">Fare & Metrics</h5>
+                                <div class="row">
+                                    <div class="col-6 mb-3">
+                                        <div class="info-label">Distance</div>
+                                        <div class="info-value"><%= booking.distance_km ? (booking.distance_km * 0.621371).toFixed(2) : '0.00' %> miles</div>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <div class="info-label">Duration</div>
+                                        <div class="info-value"><%= booking.duration_min %> mins</div>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <div class="info-label">Estimate</div>
+                                        <div class="info-value text-muted">£<%= booking.fare_estimate %></div>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <div class="info-label">Final Fare</div>
+                                        <div class="info-value text-success fs-5">£<%= booking.final_fare %></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 class="section-title">Driver Information</h5>
+                                <% if (booking.Driver) { %>
+                                    <div class="p-2 border rounded border-dashed">
+                                        <p class="mb-0 info-value"><%= booking.Driver.name %></p>
+                                        <p class="mb-1 text-muted small"><i class="fa fa-phone me-1"></i> <%= booking.Driver.phone %></p>
+                                        <span class="badge bg-dark mt-1"><%= booking.Driver.vehicle_number %></span>
+                                    </div>
+                                <% } else { %>
+                                    <div class="alert alert-warning py-2 small">Driver assignment pending</div>
+                                <% } %>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="section-title">Customer Information</h5>
+                                <div class="p-2 border rounded border-dashed">
+                                  <p class="mb-0 info-value"><%= booking.user ? booking.user.name : '-' %></p>
+<p class="mb-0 text-muted small"><i class="fa fa-phone me-1"></i> <%= booking.user ? booking.user.phone : '-' %></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-white border-0 pb-4 text-center">
+                        <button class="btn btn-secondary px-4 shadow-sm" onclick="window.history.back()">
+                            <i class="fa fa-arrow-left me-2"></i>Back to Bookings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const timeElements = document.querySelectorAll('.utc-to-ist');
+    
+    timeElements.forEach(el => {
+        const rawTime = el.getAttribute('data-time');
+        if (rawTime && rawTime !== 'null' && rawTime !== 'undefined' && rawTime !== '') {
+            const date = new Date(rawTime);
+            
+            if (!isNaN(date.getTime())) {
+                // Formatting Date (e.g., 03/04/2026)
+                const formattedDate = date.toLocaleDateString('en-GB'); 
+                // Formatting Time (e.g., 10:30 PM)
+                const formattedTime = date.toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true 
+                });
+                el.innerText = `${formattedDate} ${formattedTime}`;
+            } else {
+                el.innerText = "Invalid Date";
+            }
+        } else {
+            el.innerText = "No Schedule";
+        }
+    });
+});
+</script>
+
+<%- include('./footer.ejs') %>

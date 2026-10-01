@@ -1,0 +1,62 @@
+
+          <div class="app-footer">
+            <span>©  United Cab 2025</span>
+          </div>
+        </div>
+      </div>
+    </div>
+<script src="/assets/js/jquery.min.js"></script>
+<script src="/assets/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/vendor/overlay-scroll/jquery.overlayScrollbars.min.js"></script>
+<script src="/assets/vendor/overlay-scroll/custom-scrollbar.js"></script>
+<script src="/assets/vendor/toastify/toastify.js"></script>
+<script src="/assets/vendor/toastify/custom.js"></script>
+<script src="/assets/vendor/apex/apexcharts.min.js"></script>
+<script src="/assets/vendor/apex/custom/home/overview.js"></script>
+<script src="/assets/vendor/apex/custom/home/reachedAudience.js"></script>
+<script src="/assets/vendor/apex/custom/home/social.js"></script>
+<script src="/assets/vendor/apex/custom/home/sparkline.js"></script>
+<script src="/assets/vendor/apex/custom/home/sparkline2.js"></script>
+<script src="/assets/vendor/apex/custom/home/visitors.js"></script>
+
+<!-- Custom JS -->
+<script src="/assets/js/custom.js"></script>
+
+<!-- CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<!-- Custom JS -->
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script>
+$(document).ready(function() {
+    function convertTimes() {
+        $('.utc-to-ist').each(function() {
+            const rawTime = $(this).data('time');
+            if (rawTime) {
+                // Step 1: Parse as UTC
+                // Step 2: Convert to Local (IST)
+                // Step 3: Format it
+                const istTime = moment.utc(rawTime).local().format('DD MMM YYYY, hh:mm A');
+                $(this).text(istTime);
+            }
+        });
+
+        $('.moment-time').each(function() {
+            const rawTime = $(this).data('time');
+            if (rawTime) {
+                // "2 hours ago" wala logic bhi UTC se Local karke
+                $(this).html('<i class="bi bi-clock-history me-1"></i>' + moment.utc(rawTime).local().fromNow());
+            }
+        });
+    }
+
+    convertTimes();
+    // Live update for "fromNow"
+    setInterval(convertTimes, 60000);
+});
+</script>
+
+</body>
+
+</html>

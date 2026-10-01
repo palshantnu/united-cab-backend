@@ -1,0 +1,183 @@
+<%- include('./header.ejs') %>
+
+  <div class="app-body">
+
+    <!-- Container starts -->
+    <div class="container-fluid">
+
+      <!-- Row start -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card mb-3">
+            <div class="card-header">
+              <h4 class="card-title">Vehicle List</h4>
+            </div>
+            <div class="card-body">
+              <div class="d-flex justify-content-end mb-2">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVehicleType">
+                  Add Vehicle Type
+                </button>
+              </div>
+              <% if (success && success.length> 0) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                  <%= success %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <% } %>
+
+                  <% if (error && error.length> 0) { %>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                      <%= error %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <% } %>
+
+                      <% if (errors && errors.length> 0) { %>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                          <ul class="mb-0">
+                            <% errors.forEach(function(e) { %>
+                              <li>
+                                <%= e %>
+                              </li>
+                              <% }); %>
+                          </ul>
+                          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <% } %>
+                      <div class="table-outer">
+                        <div class="table-responsive">
+                          <table id="tripsTable" class="table align-middle custom-table m-0">
+                            <thead>
+                              <tr class="bg-light">
+                                <th>#</th>
+                                <th>Vehicle Name</th>
+                                <th>Vehicle Image</th>
+                                <th>Vehicle Logo</th>
+                                <th>Minimum KM</th>
+                                <th>Minimum Fare (£)</th>
+                                <th>Fare Per KM (£)</th>
+                                <th>Platform Fee (£)</th>
+                                <th>Description</th>
+                                <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <% vehicles.forEach((vehicle, index) => { %>
+                                <tr>
+                                  <td><%= index + 1 %></td>
+                                  <td><%= vehicle.type_name %></td>
+                                  <td>
+                                    <img src="uploads/<%= vehicle.vehicle_image %>" alt="<%= vehicle.title %>" width="100">
+                                  </td>
+                                  <td>
+                                    <img src="uploads/<%= vehicle.vehicle_logo %>" alt="<%= vehicle.title %>" width="50">
+                                  </td>
+                                  <td><%= vehicle.minimum_km %></td>
+                                  <td><%= vehicle.minimum_fare %></td>
+                                  <td><%= vehicle.fare_per_km %></td>
+                                  <td><%= vehicle.platform_fee %></td>
+                                  <td><%= vehicle.description %></td>
+                                  <td>
+                                    <a href="/vehicles/edit/<%= vehicle.id %>" class="btn btn-outline-primary btn-sm" data-bs-toggle="tooltip"
+                                      data-bs-placement="top" title="Edit">
+                                      <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <a href="/vehicles/delete/<%= vehicle.id %>" class="btn btn-outline-danger btn-sm"
+                                      onclick="return confirm('Are you sure you want to delete this vehicle?')"
+                                      data-bs-toggle="tooltip" data-bs-placement="top" title="Delete">
+                                      <i class="bi bi-trash3"></i>
+                                    </a>
+                                  </td>
+                                </tr>
+                              <% }) %>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                          <div class="modal fade" id="addVehicleType" tabindex="-1"
+                            aria-labelledby="addVehicleTypeLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title" id="addVehicleTypeLabel">Add Vehicle Type</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                                </div>
+
+                                <div class="modal-body">
+                                  <!-- In the form -->
+                                  <form id="vehicleTypeForm" action="/vehicle/store" method="POST"
+                                    enctype="multipart/form-data">
+                                    <div class="row">
+                                      <div class="col-md-6 mb-3">
+                                        <label for="vehicleName" class="form-label">Vehicle Name</label>
+                                        <input type="text" class="form-control" id="vehicleName" name="type_name"
+                                          placeholder="Enter vehicle name" required>
+                                      </div>
+
+                                      <div class="col-md-6 mb-3">
+                                        <label for="minimumKm" class="form-label">Minimum KM</label>
+                                        <input type="number" step="0.01" class="form-control" id="minimumKm"
+                                          name="minimum_km" placeholder="e.g. 2" required>
+                                      </div>
+
+                                      <div class="col-md-6 mb-3">
+                                        <label for="minimumFare" class="form-label">Minimum Fare (£)</label>
+                                        <input type="number" step="0.01" class="form-control" id="minimumFare"
+                                          name="minimum_fare" placeholder="e.g. 50" required>
+                                      </div>
+
+                                      <div class="col-md-6 mb-3">
+                                        <label for="farePerKm" class="form-label">Fare Per KM (£)</label>
+                                        <input type="number" step="0.01" class="form-control" id="farePerKm"
+                                          name="fare_per_km" placeholder="e.g. 10" required>
+                                      </div>
+
+                                      <div class="col-md-6 mb-3">
+                                        <label for="platformFee" class="form-label">Platform Fee (£)</label>
+                                        <input type="number" step="0.01" class="form-control" id="platformFee"
+                                          name="platform_fee" placeholder="e.g. 20" required>
+                                      </div>
+
+                                      <div class="col-md-6 mb-3">
+                                        <label for="vehicleImage" class="form-label">Vehicle Image</label>
+                                        <input type="file" class="form-control" id="vehicleImage" name="vehicle_image"
+                                          accept="image/*" required>
+                                      </div>
+
+                                      <div class="col-md-6 mb-3">
+                                        <label for="vehicleLogo" class="form-label">Vehicle Logo</label>
+                                        <input type="file" class="form-control" id="vehicleLogo" name="vehicle_logo"
+                                          accept="image/*" required>
+                                      </div>
+
+                                      <div class="col-12 mb-3">
+                                        <label for="description" class="form-label">Description</label>
+                                        <textarea class="form-control" id="description" name="description" rows="3"
+                                          placeholder="Optional description..."></textarea>
+                                      </div>
+                                    </div>
+                                  </form>
+                                </div>
+
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="submit" form="vehicleTypeForm" class="btn btn-primary">Add
+                                    Vehicle</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Row end -->
+
+    </div>
+    <!-- Container ends -->
+
+  </div>
+
+  <%- include('./footer.ejs') %>

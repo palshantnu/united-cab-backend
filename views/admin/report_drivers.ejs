@@ -1,0 +1,136 @@
+<%- include('./header.ejs') %>
+<%- include('./partials/ui_styles.ejs') %>
+
+<div class="app-body mt-4">
+  <div class="container-fluid">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+      <div>
+        <h4 class="fw-bold m-0">Driver Performance</h4>
+        <small class="text-muted">Rides, completion rate, earnings and rating per driver</small>
+      </div>
+      <%- include('./partials/date_filter.ejs', { action: '/reports/drivers', range, extra: '' }) %>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile">
+          <div class="label">Drivers</div>
+          <div class="value"><%= summary.drivers %></div>
+          <div class="hint">registered</div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile">
+          <div class="label">Active in Period</div>
+          <div class="value"><%= summary.activeDrivers %></div>
+          <div class="hint">had at least 1 ride</div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile">
+          <div class="label">Driver Earnings</div>
+          <div class="value">£<%= summary.totalEarnings.toFixed(2) %></div>
+          <div class="hint">completed ride fares</div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile">
+          <div class="label">Avg Completion</div>
+          <div class="value"><%= summary.avgCompletion %>%</div>
+          <div class="hint">across active drivers</div>
+        </div>
+      </div>
+    </div>
+
+    <% if (summary.top.length) { %>
+      <div class="card uc-card mb-4">
+        <div class="card-header"><h6 class="m-0 fw-bold">Top Drivers by Earnings</h6></div>
+        <div class="card-body"><div id="topChart" style="min-height: 300px;"></div></div>
+      </div>
+    <% } %>
+
+    <div class="card uc-card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table id="driverTable" class="table align-middle custom-table m-0">
+            <thead>
+              <tr>
+                <th>Driver</th>
+                <th>Vehicle</th>
+                <th>Rides</th>
+                <th>Completed</th>
+                <th>Cancelled</th>
+                <th>Completion</th>
+                <th>Earnings</th>
+                <th>Distance</th>
+                <th>Rating</th>
+                <th>Wallet</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% rows.forEach(d => { %>
+                <tr>
+                  <td>
+                    <a href="/driver/<%= d.id %>" class="fw-semibold text-decoration-none"><%= d.name %></a>
+                    <div class="small text-muted"><%= d.phone %></div>
+                  </td>
+                  <td>
+                    <%= d.vehicle %>
+                    <div class="small text-muted"><%= d.vehicle_number %></div>
+                  </td>
+                  <td class="fw-bold"><%= d.total_rides %></td>
+                  <td class="text-success"><%= d.completed %></td>
+                  <td class="text-danger" data-order="<%= d.cancelled %>">
+                    <%= d.cancelled %>
+                    <% if (d.driver_cancelled) { %><div class="small text-muted"><%= d.driver_cancelled %> by driver</div><% } %>
+                  </td>
+                  <td data-order="<%= d.completion_rate %>">
+                    <% if (d.total_rides) { %>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="progress flex-grow-1" style="height: 6px; min-width: 60px;">
+                          <div class="progress-bar <%= d.completion_rate >= 80 ? 'bg-success' : d.completion_rate >= 50 ? 'bg-warning' : 'bg-danger' %>" style="width: <%= d.completion_rate %>%"></div>
+                        </div>
+                        <span class="small"><%= d.completion_rate %>%</span>
+                      </div>
+                    <% } else { %><span class="text-muted small">—</span><% } %>
+                  </td>
+                  <td class="fw-bold" data-order="<%= d.earnings %>">£<%= d.earnings.toFixed(2) %></td>
+                  <td data-order="<%= d.distance %>"><%= d.distance.toFixed(1) %></td>
+                  <td data-order="<%= d.rating || 0 %>">
+                    <% if (d.rating) { %>
+                      <i class="bi bi-star-fill text-warning"></i> <%= d.rating %>
+                      <% if (d.rating_count) { %><span class="small text-muted">(<%= d.rating_count %>)</span><% } %>
+                    <% } else { %><span class="text-muted small">—</span><% } %>
+                  </td>
+                  <td data-order="<%= d.wallet %>">£<%= d.wallet.toFixed(2) %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('./footer.ejs') %>
+<script>
+  $(function () {
+    $('#driverTable').DataTable({ order: [[6, 'desc']], pageLength: 25 });
+  });
+  (function () {
+    const top = <%- JSON.stringify(summary.top.map(d => ({ name: d.name, earnings: d.earnings, rides: d.completed }))).replace(/</g, '\\u003c') %>;
+    if (!top.length) return;
+    new ApexCharts(document.querySelector('#topChart'), {
+      chart: { type: 'bar', height: 300, toolbar: { show: false } },
+      series: [{ name: 'Earnings', data: top.map(d => d.earnings) }],
+      xaxis: { categories: top.map(d => d.name), labels: { formatter: v => '£' + Number(v).toFixed(0) } },
+      plotOptions: { bar: { horizontal: true, borderRadius: 3, barHeight: '60%' } },
+      colors: ['#0d6efd'],
+      dataLabels: { enabled: true, formatter: v => '£' + v.toFixed(2) },
+      tooltip: { y: { formatter: (v, o) => '£' + v.toFixed(2) + ' • ' + top[o.dataPointIndex].rides + ' rides' } }
+    }).render();
+  })();
+</script>

@@ -1,0 +1,152 @@
+<%- include('./header.ejs') %>
+<%- include('./partials/ui_styles.ejs') %>
+<%
+  const statuses = ['all', 'searching', 'pending', 'accepted', 'arrived', 'started', 'rideend', 'completed', 'cancelled'];
+  let extra = '<div><label class="form-label small text-muted mb-1">Status</label><select name="status" class="form-select form-select-sm">';
+  statuses.forEach(s => { extra += `<option value="${s}" ${status === s ? 'selected' : ''}>${s === 'all' ? 'All statuses' : s}</option>`; });
+  extra += '</select></div><div><label class="form-label small text-muted mb-1">Vehicle</label><select name="vehicle_id" class="form-select form-select-sm"><option value="">All vehicles</option>';
+  vehicles.forEach(v => {
+    const name = String(v.type_name || 'Vehicle #' + v.id).replace(/[<>&"]/g, '');
+    extra += `<option value="${v.id}" ${vehicleId === v.id ? 'selected' : ''}>${name}</option>`;
+  });
+  extra += '</select></div>';
+%>
+
+<div class="app-body mt-4">
+  <div class="container-fluid">
+
+    <div class="mb-3">
+      <h4 class="fw-bold m-0">Trip Reports</h4>
+      <small class="text-muted">All rides booked in the selected period</small>
+    </div>
+
+    <div class="card uc-card mb-4">
+      <div class="card-body">
+        <%- include('./partials/date_filter.ejs', { action: '/reports/trips', range, extra }) %>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile">
+          <div class="label">Total Trips</div>
+          <div class="value"><%= summary.total %></div>
+          <div class="hint"><%= summary.completed %> completed • <%= summary.cancelled %> cancelled</div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile">
+          <div class="label">Completion Rate</div>
+          <div class="value"><%= summary.completionRate %>%</div>
+          <div class="progress mt-2" style="height: 6px;"><div class="progress-bar bg-success" style="width: <%= summary.completionRate %>%"></div></div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile">
+          <div class="label">Fare (Completed)</div>
+          <div class="value">£<%= summary.totalFare.toFixed(2) %></div>
+          <div class="hint">Avg £<%= summary.avgFare.toFixed(2) %> per trip</div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile">
+          <div class="label">Distance (Completed)</div>
+          <div class="value"><%= summary.totalDistance.toFixed(1) %></div>
+          <div class="hint">km</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-lg-5">
+        <div class="card uc-card h-100">
+          <div class="card-header"><h6 class="m-0 fw-bold">Trips by Status</h6></div>
+          <div class="card-body"><div id="statusChart" style="min-height: 280px;"></div></div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-7">
+        <div class="card uc-card h-100">
+          <div class="card-header"><h6 class="m-0 fw-bold">Status Breakdown</h6></div>
+          <div class="card-body">
+            <table class="table custom-table m-0">
+              <tbody>
+                <% Object.entries(byStatus).filter(([, n]) => n > 0).forEach(([s, n]) => { %>
+                  <tr>
+                    <td><span class="status-badge badge-<%= s %>"><%= s %></span></td>
+                    <td class="text-end fw-bold"><%= n %></td>
+                    <td class="text-end text-muted" style="width: 80px;"><%= summary.total ? Math.round(n / summary.total * 100) : 0 %>%</td>
+                  </tr>
+                <% }) %>
+                <% if (!summary.total) { %><tr><td class="text-muted">No trips in this period.</td></tr><% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card uc-card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table id="tripTable" class="table align-middle custom-table m-0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>User</th>
+                <th>Driver</th>
+                <th>Vehicle</th>
+                <th>Route</th>
+                <th>Distance</th>
+                <th>Fare</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% rows.forEach(r => { %>
+                <tr>
+                  <td><a href="/bookings-details/<%= r.id %>" class="fw-bold text-decoration-none">#<%= r.id %></a></td>
+                  <td data-order="<%= new Date(r.date).getTime() %>"><span class="utc-to-ist small" data-time="<%= new Date(r.date).toISOString() %>"></span></td>
+                  <td><%= r.user %></td>
+                  <td><%= r.driver %></td>
+                  <td><%= r.vehicle %></td>
+                  <td class="small" style="max-width: 280px;">
+                    <div class="text-truncate"><i class="bi bi-geo-alt text-success"></i> <%= r.pickup %></div>
+                    <div class="text-truncate"><i class="bi bi-geo-alt-fill text-danger"></i> <%= r.dropoff %></div>
+                  </td>
+                  <td><%= r.distance.toFixed(1) %></td>
+                  <td class="fw-bold">£<%= r.fare.toFixed(2) %></td>
+                  <td>
+                    <span class="status-badge badge-<%= r.status %>"><%= r.status %></span>
+                    <% if (r.cancelled_by) { %><div class="small text-muted">by <%= r.cancelled_by %></div><% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('./footer.ejs') %>
+<script>
+  $(function () {
+    $('#tripTable').DataTable({ order: [[1, 'desc']], pageLength: 25 });
+  });
+  (function () {
+    const byStatus = <%- JSON.stringify(byStatus) %>;
+    const entries = Object.entries(byStatus).filter(([, n]) => n > 0);
+    if (!entries.length) return;
+    const colors = { completed: '#198754', cancelled: '#dc3545', pending: '#ffc107', searching: '#fd7e14', accepted: '#0d6efd', arrived: '#6f42c1', started: '#20c997', rideend: '#6c757d' };
+    new ApexCharts(document.querySelector('#statusChart'), {
+      chart: { type: 'donut', height: 280 },
+      series: entries.map(e => e[1]),
+      labels: entries.map(e => e[0]),
+      colors: entries.map(e => colors[e[0]] || '#adb5bd'),
+      legend: { position: 'bottom' }
+    }).render();
+  })();
+</script>

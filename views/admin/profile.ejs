@@ -1,0 +1,81 @@
+<%- include('./header.ejs') %>
+<%- include('./partials/ui_styles.ejs') %>
+
+<div class="app-body mt-4">
+  <div class="container-fluid">
+
+    <div class="mb-4">
+      <h4 class="fw-bold m-0">My Profile</h4>
+      <small class="text-muted">Admin account details and password</small>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-12 col-xl-4">
+        <div class="card uc-card">
+          <div class="card-body text-center p-4">
+            <img src="/assets/images/user.png" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;" alt="">
+            <h5 class="fw-bold mb-1"><%= profile.name || 'Admin' %></h5>
+            <div class="text-muted"><%= profile.email %></div>
+            <span class="badge bg-primary mt-2">Administrator</span>
+          </div>
+          <ul class="list-group list-group-flush small">
+            <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Account ID</span><span>#<%= profile.id %></span></li>
+            <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Phone</span><span><%= profile.phone || '-' %></span></li>
+            <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Created</span><span><%= profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-' %></span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-12 col-xl-8">
+        <div class="card uc-card mb-4">
+          <div class="card-header"><h6 class="m-0 fw-bold">Account Details</h6></div>
+          <div class="card-body">
+            <form method="POST" action="/profile/update" class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Name *</label>
+                <input type="text" name="name" class="form-control" value="<%= profile.name || '' %>" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email (used to log in) *</label>
+                <input type="email" name="email" class="form-control" value="<%= profile.email || '' %>" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Phone</label>
+                <input type="text" name="phone" class="form-control" value="<%= profile.phone || '' %>">
+              </div>
+              <div class="col-12 text-end">
+                <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Save Details</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card uc-card" id="password">
+          <div class="card-header"><h6 class="m-0 fw-bold">Change Password</h6></div>
+          <div class="card-body">
+            <form method="POST" action="/profile/password" class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Current Password</label>
+                <input type="password" name="current_password" class="form-control" required autocomplete="current-password">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">New Password</label>
+                <input type="password" name="new_password" class="form-control" minlength="6" required autocomplete="new-password">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" name="confirm_password" class="form-control" minlength="6" required autocomplete="new-password">
+              </div>
+              <div class="col-12 text-end">
+                <button class="btn btn-warning"><i class="bi bi-key me-1"></i>Change Password</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('./footer.ejs') %>

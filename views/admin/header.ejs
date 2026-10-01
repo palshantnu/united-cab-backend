@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>United Cabs</title>
+    <meta name="description" content="Marketplace for Bootstrap Admin Dashboards" />
+    <meta name="author" content="Bootstrap Gallery" />
+    <link rel="canonical" href="https://www.bootstrap.gallery/">
+    <meta property="og:url" content="https://www.bootstrap.gallery">
+    <meta property="og:title" content="Admin Templates - Dashboard Templates | Bootstrap Gallery">
+    <meta property="og:description" content="Marketplace for Bootstrap Admin Dashboards">
+    <meta property="og:type" content="Website">
+    <meta property="og:site_name" content="Bootstrap Gallery">
+    <link rel="shortcut icon" href="/assets/images/logo.png" />
+    <link rel="stylesheet" href="/assets/fonts/bootstrap/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/assets/css/main.min.css" />
+    <link rel="stylesheet" href="/assets/vendor/overlay-scroll/OverlayScrollbars.min.css" />
+    <link rel="stylesheet" href="/assets/vendor/toastify/toastify.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+      .sidebar-wrapper {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .sidebarMenuScroll {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 5px;
+      }
+      
+      .sidebarMenuScroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .sidebarMenuScroll::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <div class="main-container">
+        <nav id="sidebar" class="sidebar-wrapper">
+          <div class="app-brand px-3 py-2 d-flex align-items-center">
+            <a href="/home">
+              <img src="/assets/images/logo.png" class="logo" alt="Bootstrap Gallery" />
+            </a>
+          </div>
+          <div class="sidebarMenuScroll">
+            <ul class="sidebar-menu">
+              <li>
+                <a href="/home">
+                  <i class="bi bi-speedometer2"></i>
+                  <span class="menu-text">Dashboard</span>
+                </a>
+              </li>
+              <li class="has-submenu">
+                <a href="javascript:void(0);" class="d-flex justify-content-between align-items-center">
+                  <i class="bi bi-truck-front-fill"></i>
+                  <span class="menu-text flex-grow-1 ms-2">Trip List</span>
+                  <i class="bi bi-chevron-down submenu-toggle ms-auto"></i>
+                </a>
+                <ul class="submenu ps-4 mt-2" style="display: none;">
+                  <li><a href="/bookings"><i class="bi bi-list me-1"></i> All Trips</a></li>
+                  <li><a href="/bookings?status=pending"><i class="bi bi-check2-circle me-1"></i>Pending Trips</a></li>
+                  <li><a href="/bookings?status=accepted"><i class="bi bi-check2-circle me-1"></i>Accepted Trips</a></li>
+                  <li><a href="/bookings?status=arrived"><i class="bi bi-check2-circle me-1"></i>Reach Loc. Trips</a></li>
+                  <li><a href="/bookings?status=started"><i class="bi bi-check2-circle me-1"></i>Start Ride Trips</a></li>
+                  <li><a href="/bookings?status=completed"><i class="bi bi-check2-circle me-1"></i> Completed Trips</a></li>
+                  <li><a href="/bookings?status=cancelled"><i class="bi bi-x-circle me-1"></i> Cancelled Trips</a></li>
+                </ul>
+              </li>
+              <li class="has-submenu">
+                <a href="javascript:void(0);" class="d-flex justify-content-between align-items-center">
+                  <i class="bi bi-truck"></i>
+                  <span class="menu-text flex-grow-1 ms-2">Vehicle</span>
+                  <i class="bi bi-chevron-down submenu-toggle ms-auto"></i>
+                </a>
+                <ul class="submenu ps-4 mt-2" style="display: none;">
+                  <!-- <li><a href="/vehicles/add"><i class="bi bi-plus-circle me-1"></i> Add Vehicle</a></li> -->
+                  <li><a href="/vehicles"><i class="bi bi-card-list me-1"></i> List Vehicle</a></li>
+                  <li><a href="/holidaylist"><i class="bi bi-card-list me-1"></i>Holiday List</a></li>
+                </ul>
+              </li>
+              <!-- Drivers -->
+              <li class="has-submenu">
+                <a href="javascript:void(0);" class="d-flex justify-content-between align-items-center">
+                  <i class="bi bi-truck"></i>
+                  <span class="menu-text flex-grow-1 ms-2">Driver</span>
+                  <i class="bi bi-chevron-down submenu-toggle ms-auto"></i>
+                </a>
+                <ul class="submenu ps-4 mt-2" style="display: none;">
+                  <!-- <li><a href="/vehicles/add"><i class="bi bi-plus-circle me-1"></i> Add Vehicle</a></li> -->
+                  <li><a href="/drivers"><i class="bi bi-card-list me-1"></i> Drivers List</a></li>
+                  <li><a href="/driver-recharge-history"><i class="bi bi-card-list me-1"></i>Driver Recharge Request</a></li>
+                  <li><a href="/admin/driver-subscription-history"><i class="bi bi-card-list me-1"></i>Driver Subscription</a></li>
+                </ul>
+              </li>
+              <li>
+                <a href="/users">
+                  <i class="bi bi-person"></i>
+                  <span class="menu-text">Users List</span>
+                </a>
+              </li>
+              <li>
+                <a href="/bookings">
+                  <i class="bi bi-journal-text"></i>
+                  <span class="menu-text">Booking History</span>
+                </a>
+              </li>
+              <li>
+                <a href="/subscriptionplan_list">
+                  <i class="bi bi-journal-text"></i>
+                  <span class="menu-text">Subscription Plan</span>
+                </a>
+              </li>
+              <li>
+                <a href="/cms">
+                  <i class="bi bi-credit-card"></i>
+                  <span class="menu-text">CMS</span>
+                </a>
+              </li>
+              <li class="has-submenu">
+                  <a href="javascript:void(0);" class="d-flex justify-content-between align-items-center">
+                    <i class="bi bi-wallet2"></i>
+                    <span class="menu-text flex-grow-1 ms-2">Accounts & Earnings</span>
+                    <i class="bi bi-chevron-down submenu-toggle ms-auto"></i>
+                  </a>
+                  <ul class="submenu ps-4 mt-2" style="display: none;">
+                    <li><a href="/earnings/admin"><i class="bi bi-graph-up-arrow me-1"></i> Admin Commission</a></li>
+                    <li><a href="/payout-requests"><i class="bi bi-cash-stack me-1"></i> Payout Requests</a></li>
+                    <li><a href="/transaction-history"><i class="bi bi-clock-history me-1"></i> Transactions</a></li>
+                  </ul>
+                </li>
+                <li class="has-submenu">
+                  <a href="javascript:void(0);" class="d-flex justify-content-between align-items-center">
+                    <i class="bi bi-megaphone"></i>
+                    <span class="menu-text flex-grow-1 ms-2">Marketing</span>
+                    <i class="bi bi-chevron-down submenu-toggle ms-auto"></i>
+                  </a>
+                  <ul class="submenu ps-4 mt-2" style="display: none;">
+                    <li><a href="/coupons"><i class="bi bi-tag me-1"></i> Coupon Codes</a></li>
+                    <li><a href="/push-notifications"><i class="bi bi-send me-1"></i> Send Notifications</a></li>
+                    <li><a href="/banners"><i class="bi bi-image me-1"></i> App Banners</a></li>
+                  </ul>
+                </li>
+                <li class="has-submenu">
+                  <a href="javascript:void(0);" class="d-flex justify-content-between align-items-center">
+                    <i class="bi bi-bar-chart-line"></i>
+                    <span class="menu-text flex-grow-1 ms-2">Reports</span>
+                    <i class="bi bi-chevron-down submenu-toggle ms-auto"></i>
+                  </a>
+                  <ul class="submenu ps-4 mt-2" style="display: none;">
+                    <li><a href="/reports/trips"><i class="bi bi-file-earmark-bar-graph me-1"></i> Trip Reports</a></li>
+                    <li><a href="/reports/drivers"><i class="bi bi-person-lines-fill me-1"></i> Driver Performance</a></li>
+                    <li><a href="/reports/revenue"><i class="bi bi-currency-dollar me-1"></i> Revenue Analysis</a></li>
+                  </ul>
+                </li>
+                <li class="has-submenu">
+                  <a href="javascript:void(0);" class="d-flex justify-content-between align-items-center">
+                    <i class="bi bi-headset"></i>
+                    <span class="menu-text flex-grow-1 ms-2">Support</span>
+                    <i class="bi bi-chevron-down submenu-toggle ms-auto"></i>
+                  </a>
+                  <ul class="submenu ps-4 mt-2" style="display: none;">
+                    <li><a href="/tickets"><i class="bi bi-ticket-perforated me-1"></i> Support Tickets</a></li>
+                    <li><a href="/complaints"><i class="bi bi-exclamation-octagon me-1"></i> Complaints</a></li>
+                  </ul>
+                </li>
+
+                <li class="has-submenu">
+                  <a href="javascript:void(0);" class="d-flex justify-content-between align-items-center">
+                    <i class="bi bi-gear"></i>
+                    <span class="menu-text flex-grow-1 ms-2">Settings</span>
+                    <i class="bi bi-chevron-down submenu-toggle ms-auto"></i>
+                  </a>
+                  <ul class="submenu ps-4 mt-2" style="display: none;">
+                    <li><a href="/settings/general"><i class="bi bi-sliders me-1"></i> General Settings</a></li>
+                    <li><a href="/settings/app-config"><i class="bi bi-phone me-1"></i> App Configuration</a></li>
+                    <li><a href="/settings/roles"><i class="bi bi-shield-lock me-1"></i> Roles & Permissions</a></li>
+                    <li><a href="/settings/logs"><i class="bi bi-terminal me-1"></i> System Logs</a></li>
+                  </ul>
+                </li>
+            </ul>
+          </div>
+        </nav>
+        <div class="app-container">
+          <div class="app-header d-flex align-items-center">
+            <div class="d-flex">
+              <button class="btn btn-outline-primary me-2 toggle-sidebar" id="toggle-sidebar">
+                <i class="bi bi-list fs-5"></i>
+              </button>
+              <button class="btn btn-outline-primary me-2 pin-sidebar" id="pin-sidebar">
+                <i class="bi bi-list fs-5"></i>
+              </button>
+            </div>
+
+            <div class="app-brand-sm d-md-none d-sm-block">
+              <a href="/home">
+                <img src="/assets/images/logo-sm.svg" class="logo" alt="Logo">
+              </a>
+            </div>
+
+            <div class="header-actions">
+              <div class="dropdown ms-2">
+                <a id="userSettings" class="dropdown-toggle d-flex py-2 align-items-center text-decoration-none"
+                  href="#!" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <img src="/assets/images/user.png" class="rounded-2 img-3x" alt="User Profile" />
+                </a>
+                <div class="dropdown-menu dropdown-menu-end shadow-sm">
+                  <div class="p-3 border-bottom mb-2">
+                    <h6 class="mb-1" id="user-real-name"><%= (typeof admin !== 'undefined' && admin && admin.name) || 'Admin' %></h6>
+                    <p class="m-0 small opacity-50" id="user-real-email"><%= (typeof admin !== 'undefined' && admin && admin.email) || '' %></p>
+                  </div>
+                  <a class="dropdown-item d-flex align-items-center" href="/profile">
+                    <i class="bi bi-person fs-4 me-2"></i>Profile
+                  </a>
+                  <a class="dropdown-item d-flex align-items-center" href="/profile#password">
+                    <i class="bi bi-key fs-4 me-2"></i>Change Password
+                  </a>
+                  <div class="d-grid p-3 py-2">
+                    <a class="btn btn-danger" href="/logout">Logout</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <script>
+            // Highlight the current page in the sidebar and open its submenu
+            document.addEventListener('DOMContentLoaded', function () {
+              var here = location.pathname;
+              document.querySelectorAll('#sidebar .sidebar-menu a[href^="/"]').forEach(function (a) {
+                var target = a.getAttribute('href').split('?')[0];
+                if (target === '/' || !(here === target || here.indexOf(target + '/') === 0)) return;
+                var li = a.closest('li');
+                li.classList.add('active', 'current-page');
+                var sub = li.closest('.submenu');
+                if (sub) {
+                  sub.style.display = 'block';
+                  sub.closest('li.has-submenu').classList.add('active');
+                }
+              });
+            });
+          </script>
+          <!-- App header ends -->

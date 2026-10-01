@@ -1,0 +1,57 @@
+<%- include('./header.ejs') %>
+
+<div class="app-body">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h4 class="card-title">Edit Vehicle Type</h4>
+          </div>
+          <div class="card-body">
+            <form action="/subscription/update" method="POST" >
+              <div class="row">
+                <!-- Plan Name -->
+                  <input type="hidden" name="id" value="<%= subscription.id %>">
+                <div class="mb-3 col-md-6">
+                  <label for="planName" class="form-label">Plan Name</label>
+                  <input type="text" name="name" class="form-control" id="planName" value="<%= subscription.name %>" required>
+                </div>
+
+                <!-- Price -->
+                <div class="mb-3 col-md-6">
+                  <label for="price" class="form-label">Price (£)</label>
+                  <input type="number" step="0.01" name="price" class="form-control" id="price" value="<%= subscription.price %>" required>
+                </div>
+
+                <!-- Duration Days -->
+                <div class="mb-3 col-md-6">
+                  <label for="duration" class="form-label">Duration (Days)</label>
+                  <input type="number" name="duration_days" class="form-control" id="duration" step="1" min="1" value="<%= subscription.duration_days %>" required>
+                </div>
+
+                <!-- Miles (KM) -->
+                <div class="mb-3 col-md-6">
+                  <label for="miles" class="form-label">Miles</label>
+                  <input type="number" name="mile" class="form-control" id="miles" step="1" min="1" value="<%= subscription.mile %>" required>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3 col-12">
+                  <label for="description" class="form-label">Description</label>
+                  <textarea name="description" class="form-control" id="description" rows="3"><%= subscription.description %></textarea>
+                </div>
+
+                <!-- Submit -->
+                <div class="col-12">
+                  <button type="submit" class="btn btn-primary">Update</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('./footer.ejs') %>

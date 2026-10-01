@@ -1,0 +1,69 @@
+<!DOCTYPE html> 
+<html lang="en">
+   <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>United Cabs</title>
+      <!-- Meta -->     
+      <meta name="description" content="Marketplace for Bootstrap Admin Dashboards" />
+      <meta name="author" content="Bootstrap Gallery" />
+      <link rel="canonical" href="https://www.bootstrap.gallery/">
+      <meta property="og:url" content="https://www.bootstrap.gallery">
+      <meta property="og:title" content="Admin Templates - Dashboard Templates | Bootstrap Gallery">
+      <meta property="og:description" content="Marketplace for Bootstrap Admin Dashboards">
+      <meta property="og:type" content="Website">
+      <meta property="og:site_name" content="Bootstrap Gallery">
+      <link rel="shortcut icon" href="assets/images/logo.png" />
+      <!-- ************ CSS Files ************ -->     
+      <link rel="stylesheet" href="assets/fonts/bootstrap/bootstrap-icons.css" />
+      <link rel="stylesheet" href="assets/css/main.min.css" />
+      <link rel="stylesheet" href="assets/vendor/overlay-scroll/OverlayScrollbars.min.css" />
+   </head>
+   <body>
+      <!-- Container start -->     
+      <div class="container">
+         <div class="row justify-content-center">
+            <div class="col-xl-4 col-lg-5 col-sm-6 col-12">
+               <form action="/logincheck" method="POST" class="my-5">
+                  <div class="border rounded-2 p-4 mt-5">
+                     <div class="login-form ">
+                        <a href="index.html" class="mb-4 d-flex align-items-center justify-content-center">                   <img src="assets/images/logo1.png" class="img-fluid login-logo" alt="Cab Admin Dashboard" />                 </a>                 
+                        <h2 class="fw-bold mb-5 text-center">Login </h2>
+                        <% if (success && success.length > 0) { %>                     
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">                       <%= success %>                       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>                     </div>
+                        <% } %>                    <% if (error && error.length > 0) { %>                     
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">                       <%= error %>                       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>                     </div>
+                        <% } %>                    <% if (errors && errors.length > 0) { %>                     
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                           <ul class="mb-0">
+                              <% errors.forEach(function(e) { %>                           
+                              <li><%= e %></li>
+                              <% }); %>                       
+                           </ul>
+                           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>                     
+                        </div>
+                        <% } %>                  
+                        <div class="mb-3">                  
+                         <label class="form-label">Your Email</label>                  
+                         <input type="text" class="form-control" name="email" placeholder="Enter your email" />                 
+                        </div>
+                        <div class="mb-3">                   
+                          <label class="form-label">Your Password</label>                   
+                          <input type="password" class="form-control" name="password" placeholder="Enter password" />                 
+                        </div>
+                        <div class="d-grid py-3 mt-4">                  
+                         <button type="submit" class="btn btn-lg btn-primary">LOGIN</button>                 
+                        </div>
+                     </div>
+                  </div>
+               </form>
+            </div>
+         </div>
+      </div>
+      <script src="assets/js/jquery.min.js"></script> 
+      <script src="assets/js/bootstrap.bundle.min.js"></script>
+      <script src="assets/vendor/overlay-scroll/jquery.overlayScrollbars.min.js"></script> 
+      <script src="assets/vendor/overlay-scroll/custom-scrollbar.js"></script> 
+      <script src="assets/vendor/toastify/custom.js"></script> 
+   </body>
+</html>

@@ -1,0 +1,114 @@
+<%- include('./header.ejs') %>
+<%- include('./partials/ui_styles.ejs') %>
+
+<div class="app-body mt-4">
+  <div class="container-fluid">
+
+    <div class="mb-4">
+      <a href="/driver/<%= driver.id %>" class="text-decoration-none small"><i class="bi bi-arrow-left"></i> Back to driver</a>
+      <h4 class="fw-bold m-0">Edit Driver #<%= driver.id %></h4>
+    </div>
+
+    <form method="POST" action="/driver/update/<%= driver.id %>" enctype="multipart/form-data">
+      <div class="row g-4">
+        <div class="col-12 col-xl-4">
+          <div class="card uc-card">
+            <div class="card-body text-center p-4">
+              <img id="photoPreview" src="<%= photoUrl || '/assets/images/user.png' %>" alt=""
+                   class="rounded-circle mb-3" style="width: 130px; height: 130px; object-fit: cover;">
+              <div>
+                <label class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-camera me-1"></i>Change photo
+                  <input type="file" name="profile_photo" accept="image/*" hidden id="photoInput">
+                </label>
+              </div>
+              <hr>
+              <div class="text-start">
+                <label class="form-label fw-semibold">Account Status</label>
+                <select name="status" class="form-select mb-2">
+                  <option value="1" <%= driver.status != 0 ? 'selected' : '' %>>Active<%= driver.status == 2 ? ' (on trip)' : '' %></option>
+                  <option value="0" <%= driver.status == 0 ? 'selected' : '' %>>Inactive</option>
+                </select>
+                <div class="form-check form-switch mt-3">
+                  <input class="form-check-input" type="checkbox" role="switch" name="phone_varified" value="1" id="phoneVerified" <%= driver.phone_varified ? 'checked' : '' %>>
+                  <label class="form-check-label" for="phoneVerified">Phone verified</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-xl-8">
+          <div class="card uc-card mb-4">
+            <div class="card-header"><h6 class="m-0 fw-bold">Personal Details</h6></div>
+            <div class="card-body row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Full Name *</label>
+                <input type="text" name="name" class="form-control" value="<%= driver.name || '' %>" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Gender</label>
+                <select name="gender" class="form-select">
+                  <option value="">—</option>
+                  <% ['Male', 'Female', 'Other'].forEach(g => { %>
+                    <option value="<%= g %>" <%= (driver.gender || '').toLowerCase() === g.toLowerCase() ? 'selected' : '' %>><%= g %></option>
+                  <% }) %>
+                </select>
+              </div>
+              <div class="col-4 col-md-2">
+                <label class="form-label">Code</label>
+                <input type="text" name="country_code" class="form-control" value="<%= driver.country_code || '' %>" placeholder="+44">
+              </div>
+              <div class="col-8 col-md-4">
+                <label class="form-label">Phone *</label>
+                <input type="text" name="phone" class="form-control" value="<%= driver.phone || '' %>" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">License Number</label>
+                <input type="text" name="license_number" class="form-control" value="<%= driver.license_number || '' %>">
+              </div>
+            </div>
+          </div>
+
+          <div class="card uc-card mb-4">
+            <div class="card-header"><h6 class="m-0 fw-bold">Vehicle</h6></div>
+            <div class="card-body row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Vehicle Type</label>
+                <select name="vehicle_id" class="form-select">
+                  <option value="">—</option>
+                  <% vehicles.forEach(v => { %>
+                    <option value="<%= v.id %>" <%= driver.vehicle_id == v.id ? 'selected' : '' %>><%= v.type_name %><%= v.shift_type ? ' (' + v.shift_type + ')' : '' %></option>
+                  <% }) %>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Vehicle Number</label>
+                <input type="text" name="vehicle_number" class="form-control text-uppercase" value="<%= driver.vehicle_number || '' %>">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Vehicle Model</label>
+                <input type="text" name="vehicle_model" class="form-control" value="<%= driver.vehicle_model || '' %>">
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <a href="/driver/<%= driver.id %>" class="btn btn-light">Cancel</a>
+            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check2 me-1"></i>Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<%- include('./footer.ejs') %>
+<script>
+  document.getElementById('photoInput').addEventListener('change', function () {
+    if (this.files && this.files[0]) {
+      document.getElementById('photoPreview').src = URL.createObjectURL(this.files[0]);
+    }
+  });
+</script>

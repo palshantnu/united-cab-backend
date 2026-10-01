@@ -1,0 +1,25 @@
+<%#
+  Locals: action (form URL), range ({ fromStr, toStr }), extra (optional HTML for more filters)
+%>
+<form method="GET" action="<%= action %>" class="filter-bar d-flex flex-wrap align-items-end gap-2">
+  <div>
+    <label class="form-label small text-muted mb-1">From</label>
+    <input type="date" name="from" value="<%= range.fromStr %>" class="form-control form-control-sm">
+  </div>
+  <div>
+    <label class="form-label small text-muted mb-1">To</label>
+    <input type="date" name="to" value="<%= range.toStr %>" class="form-control form-control-sm">
+  </div>
+  <% if (typeof extra !== 'undefined' && extra) { %><%- extra %><% } %>
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-funnel me-1"></i>Apply</button>
+    <button type="submit" name="export" value="csv" class="btn btn-outline-success btn-sm"><i class="bi bi-download me-1"></i>CSV</button>
+  </div>
+  <div class="d-flex gap-1 ms-md-2">
+    <% [['Today', 0], ['7D', 6], ['30D', 29], ['90D', 89]].forEach(([label, back]) => {
+         const t = new Date(); const f = new Date(); f.setDate(t.getDate() - back);
+         const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); %>
+      <a class="btn btn-light btn-sm" href="<%= action %>?from=<%= ymd(f) %>&to=<%= ymd(t) %>"><%= label %></a>
+    <% }) %>
+  </div>
+</form>

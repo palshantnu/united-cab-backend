@@ -1,0 +1,159 @@
+<%- include('./header.ejs') %>
+<%- include('./partials/ui_styles.ejs') %>
+
+<div class="app-body mt-4">
+  <div class="container-fluid">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+      <div>
+        <h4 class="fw-bold m-0">Revenue Analysis</h4>
+        <small class="text-muted">Gross ride fares vs. platform revenue (subscriptions + ride wallet charges)</small>
+      </div>
+      <%- include('./partials/date_filter.ejs', { action: '/reports/revenue', range, extra: '' }) %>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile">
+          <div class="label">Gross Ride Fares</div>
+          <div class="value">£<%= summary.gross.toFixed(2) %></div>
+          <div class="hint">
+            <% if (summary.growth !== null) { %>
+              <span class="<%= summary.growth >= 0 ? 'text-success' : 'text-danger' %> fw-semibold">
+                <i class="bi <%= summary.growth >= 0 ? 'bi-arrow-up-right' : 'bi-arrow-down-right' %>"></i><%= Math.abs(summary.growth) %>%
+              </span> vs previous period (£<%= summary.prevGross.toFixed(2) %>)
+            <% } else { %>no data for previous period<% } %>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile">
+          <div class="label">Platform Revenue</div>
+          <div class="value text-primary">£<%= summary.platform.toFixed(2) %></div>
+          <div class="hint">Subs £<%= summary.subscriptions.toFixed(2) %> • Rides £<%= summary.rideCharges.toFixed(2) %></div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile">
+          <div class="label">Completed Rides</div>
+          <div class="value"><%= summary.rides %></div>
+          <div class="hint">Avg fare £<%= summary.avgFare.toFixed(2) %></div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="stat-tile">
+          <div class="label">Wallet Recharges</div>
+          <div class="value">£<%= summary.recharges.toFixed(2) %></div>
+          <div class="hint">cash collected from drivers</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card uc-card mb-4">
+      <div class="card-header"><h6 class="m-0 fw-bold">Daily Revenue</h6></div>
+      <div class="card-body"><div id="revenueChart" style="min-height: 340px;"></div></div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-xl-5">
+        <div class="card uc-card h-100">
+          <div class="card-header"><h6 class="m-0 fw-bold">By Vehicle Type</h6></div>
+          <div class="card-body">
+            <% if (byVehicle.length) { %>
+              <div id="vehicleChart" style="min-height: 260px;"></div>
+              <table class="table custom-table m-0 mt-3">
+                <thead><tr><th>Vehicle</th><th class="text-end">Rides</th><th class="text-end">Gross</th><th class="text-end">Avg</th></tr></thead>
+                <tbody>
+                  <% byVehicle.forEach(v => { %>
+                    <tr>
+                      <td class="fw-semibold"><%= v.vehicle %></td>
+                      <td class="text-end"><%= v.rides %></td>
+                      <td class="text-end fw-bold">£<%= v.gross.toFixed(2) %></td>
+                      <td class="text-end text-muted">£<%= v.avg.toFixed(2) %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            <% } else { %>
+              <p class="text-muted m-0">No completed rides in this period.</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-xl-7">
+        <div class="card uc-card h-100">
+          <div class="card-header"><h6 class="m-0 fw-bold">Day by Day</h6></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table id="dailyTable" class="table align-middle custom-table m-0">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th class="text-end">Rides</th>
+                    <th class="text-end">Gross</th>
+                    <th class="text-end">Subs</th>
+                    <th class="text-end">Ride Charges</th>
+                    <th class="text-end">Platform</th>
+                    <th class="text-end">Recharges</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% dailyRows.slice().reverse().forEach(d => { %>
+                    <tr>
+                      <td><%= d.date %></td>
+                      <td class="text-end"><%= d.rides %></td>
+                      <td class="text-end">£<%= d.gross.toFixed(2) %></td>
+                      <td class="text-end">£<%= d.subscriptions.toFixed(2) %></td>
+                      <td class="text-end">£<%= d.rideCharges.toFixed(2) %></td>
+                      <td class="text-end fw-bold text-primary">£<%= d.platform.toFixed(2) %></td>
+                      <td class="text-end text-muted">£<%= d.recharges.toFixed(2) %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('./footer.ejs') %>
+<script>
+  $(function () {
+    $('#dailyTable').DataTable({ order: [[0, 'desc']], pageLength: 15, searching: false });
+  });
+  (function () {
+    const rows = <%- JSON.stringify(dailyRows) %>;
+    const euro = v => '£' + Number(v).toFixed(2);
+    new ApexCharts(document.querySelector('#revenueChart'), {
+      chart: { type: 'line', height: 340, toolbar: { show: false } },
+      series: [
+        { name: 'Gross fares', type: 'area', data: rows.map(r => r.gross) },
+        { name: 'Platform revenue', type: 'column', data: rows.map(r => r.platform) },
+        { name: 'Recharges', type: 'line', data: rows.map(r => r.recharges) }
+      ],
+      stroke: { width: [2, 0, 2], curve: 'smooth' },
+      fill: { opacity: [0.2, 0.9, 1] },
+      colors: ['#0d6efd', '#198754', '#f0ad4e'],
+      xaxis: { categories: rows.map(r => r.date), labels: { rotate: -45, hideOverlappingLabels: true } },
+      yaxis: { labels: { formatter: v => '£' + Number(v).toFixed(0) } },
+      dataLabels: { enabled: false },
+      tooltip: { shared: true, y: { formatter: euro } },
+      legend: { position: 'top' }
+    }).render();
+
+    const vehicles = <%- JSON.stringify(byVehicle.map(v => ({ name: v.vehicle, gross: v.gross }))).replace(/</g, '\\u003c') %>;
+    if (vehicles.length) {
+      new ApexCharts(document.querySelector('#vehicleChart'), {
+        chart: { type: 'donut', height: 260 },
+        series: vehicles.map(v => v.gross),
+        labels: vehicles.map(v => v.name),
+        legend: { position: 'bottom' },
+        tooltip: { y: { formatter: euro } }
+      }).render();
+    }
+  })();
+</script>
