@@ -937,41 +937,53 @@ static user_list = async (req, res) => {
     }
   };
   
+  // Account deletion (store-compliant): personal data is wiped and the phone number is released,
+  // so signing in again with that number creates a brand-new account. Rides / transactions stay for records.
+  static ACTIVE_RIDE_STATUSES = ['accepted', 'arrived', 'started', 'rideend'];
+
   static driver_soft_delete = async (req, res) => {
-   try {
+  try {
     const { driver_id } = req.body;
 
     if (!driver_id) {
-      return res.status(400).json({
-        message: "driver_id is required",
-      });
+      return res.status(400).json({ success: false, message: "driver_id is required" });
     }
-    const driver = await Driver.findOne({
-      where: {
-        id: driver_id,
-        status: 1,
-      },
-    });
+    const driver = await Driver.findByPk(driver_id);
 
-    if (!driver) {
-      return res.status(404).json({
-        message: "Driver not found or already deleted",
+    if (!driver || String(driver.phone || '').startsWith('del_')) {
+      return res.status(404).json({ success: false, message: "Driver not found or already deleted" });
+    }
+
+    const activeRide = await Ride.findOne({
+      where: { driver_id, status: { [Op.in]: ApiController.ACTIVE_RIDE_STATUSES } },
+    });
+    if (activeRide) {
+      return res.status(400).json({
+        success: false,
+        message: "You have an ongoing ride. Please complete it before deleting your account.",
       });
     }
 
     await Driver.update(
-      { status: 0, online_status: 0 },
-      { where: { id: driver_id } }
+      {
+        name: 'Deleted Driver',
+        phone: `del_${driver.id}`,
+        status: 0,
+        online_status: 0,
+        devicetoken: null,
+        profile_photo: null,
+        license_number: null,
+        vehicle_number: null,
+        driver_latitude: null,
+        driver_longitude: null,
+      },
+      { where: { id: driver.id } }
     );
 
-    return res.json({
-      message: "Driver account  deleted successfully",
-    });
+    return res.json({ success: true, message: "Driver account deleted successfully" });
   } catch (error) {
     console.error("Driver delete error:", error);
-    return res.status(500).json({
-      message: "Something went wrong",
-    });
+    return res.status(500).json({ success: false, message: "Something went wrong" });
   }
 };
 
@@ -980,33 +992,49 @@ static user_soft_delete = async (req, res) => {
     const { user_id } = req.body;
 
     if (!user_id) {
-      return res.status(400).json({
-        message: "user_id is required",
-      });
+      return res.status(400).json({ success: false, message: "user_id is required" });
     }
-    const user = await User.findOne({
-      where: { id: user_id },
+    const user = await User.findByPk(user_id);
+
+    if (!user || user.status === 'deleted') {
+      return res.status(404).json({ success: false, message: "User not found or already deleted" });
+    }
+
+    const activeRide = await Ride.findOne({
+      where: { user_id, status: { [Op.in]: ApiController.ACTIVE_RIDE_STATUSES } },
     });
-
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
+    if (activeRide) {
+      return res.status(400).json({
+        success: false,
+        message: "You have an ongoing ride. Please complete it before deleting your account.",
       });
     }
 
-    await User.update(
-      { status: "inactive", devicetoken: null },
-      { where: { id: user_id } }
+    // Requests still waiting for a driver are cancelled so no driver gets them
+    await Ride.update(
+      { status: 'cancelled', cancelled_by: 'user', cancel_reason: 'Account deleted' },
+      { where: { user_id, status: { [Op.in]: ['pending', 'searching'] } } }
     );
 
-    return res.json({
-      message: "User account deleted successfully",
-    });
+    await User.update(
+      {
+        name: 'Deleted User',
+        email: null,
+        phone: `del_${user.id}`,
+        password: null,
+        profile: null,
+        devicetoken: null,
+        user_latitude: null,
+        user_longitude: null,
+        status: 'deleted',
+      },
+      { where: { id: user.id } }
+    );
+
+    return res.json({ success: true, message: "User account deleted successfully" });
   } catch (error) {
     console.error("User delete error:", error);
-    return res.status(500).json({
-      message: "Something went wrong",
-    });
+    return res.status(500).json({ success: false, message: "Something went wrong" });
   }
 };
 
