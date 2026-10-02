@@ -1,0 +1,134 @@
+<%- include('./header.ejs') %>
+<%- include('./partials/ui_styles.ejs') %>
+<%
+  const appLabel = { user: { name: 'User App', icon: 'bi-person' }, driver: { name: 'Driver App', icon: 'bi-person-badge' } };
+  const platformLabel = { android: { name: 'Android', icon: 'bi-android2', store: 'Play Store link' }, ios: { name: 'iOS', icon: 'bi-apple', store: 'App Store link' } };
+  const fmt = d => d ? new Date(d).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+%>
+
+<div class="app-body mt-4">
+  <div class="container-fluid">
+
+    <div class="mb-4">
+      <h4 class="fw-bold m-0">App Updates</h4>
+      <small class="text-muted">Ask riders and drivers to update their app — separately for Android and iOS</small>
+    </div>
+
+    <div class="alert alert-light border small mb-4">
+      <div class="fw-semibold mb-1"><i class="bi bi-info-circle me-1"></i>How it works</div>
+      <ul class="mb-0 ps-3">
+        <li><b>Normal update</b> — apps older than the latest version see an “Update” popup with a <i>Later</i> option.</li>
+        <li><b>Force update</b> — apps older than the latest version are blocked until they update.</li>
+        <li><b>Minimum supported version</b> — apps below it are always forced, even if the latest release is a normal update. Choosing Force update sets it automatically.</li>
+        <li>Publish the new build on the store first, then raise the latest version here.</li>
+      </ul>
+    </div>
+
+    <% ['user', 'driver'].forEach(app => { %>
+      <h5 class="fw-bold mb-3"><i class="bi <%= appLabel[app].icon %> me-1"></i><%= appLabel[app].name %></h5>
+      <div class="row g-4 mb-5">
+        <% ['android', 'ios'].forEach(platform => {
+             const c = configs[app] && configs[app][platform];
+             if (!c) return;
+             const formId = 'form_' + c.id;
+        %>
+          <div class="col-12 col-xl-6">
+            <div class="card uc-card h-100">
+              <div class="card-header d-flex align-items-center justify-content-between">
+                <h6 class="m-0 fw-bold"><i class="bi <%= platformLabel[platform].icon %> me-1"></i><%= platformLabel[platform].name %></h6>
+                <% if (!c.is_active) { %>
+                  <span class="badge bg-secondary">Off</span>
+                <% } else if (c.update_type === 'force') { %>
+                  <span class="badge bg-danger">Force update · <%= c.latest_version %></span>
+                <% } else { %>
+                  <span class="badge bg-primary">Normal update · <%= c.latest_version %></span>
+                <% } %>
+              </div>
+              <div class="card-body">
+                <form method="POST" action="/settings/app-updates/<%= c.id %>" id="<%= formId %>" class="update-form">
+                  <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" role="switch" name="is_active" id="<%= formId %>_active" <%= c.is_active ? 'checked' : '' %>>
+                    <label class="form-check-label fw-semibold" for="<%= formId %>_active">Show update popup in the app</label>
+                  </div>
+
+                  <div class="row g-3 mb-3">
+                    <div class="col-6">
+                      <label class="form-label fw-semibold">Latest version</label>
+                      <input type="text" name="latest_version" class="form-control" value="<%= c.latest_version %>" required pattern="\d+(\.\d+){0,3}" placeholder="e.g. 1.0.14">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label fw-semibold">Minimum supported version</label>
+                      <input type="text" name="min_version" class="form-control min-version" value="<%= c.min_version || '' %>" pattern="\d+(\.\d+){0,3}" placeholder="optional">
+                    </div>
+                  </div>
+
+                  <label class="form-label fw-semibold">Update type</label>
+                  <div class="row g-2 mb-1">
+                    <div class="col-6">
+                      <input type="radio" class="btn-check" name="update_type" id="<%= formId %>_normal" value="normal" <%= c.update_type !== 'force' ? 'checked' : '' %>>
+                      <label class="btn btn-outline-primary w-100 text-start py-2" for="<%= formId %>_normal">
+                        <i class="bi bi-arrow-up-circle me-1"></i>Normal
+                        <div class="small opacity-75">User can tap “Later”</div>
+                      </label>
+                    </div>
+                    <div class="col-6">
+                      <input type="radio" class="btn-check" name="update_type" id="<%= formId %>_force" value="force" <%= c.update_type === 'force' ? 'checked' : '' %>>
+                      <label class="btn btn-outline-danger w-100 text-start py-2" for="<%= formId %>_force">
+                        <i class="bi bi-exclamation-octagon me-1"></i>Force
+                        <div class="small opacity-75">App blocked until updated</div>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="form-text mb-3 force-hint <%= c.update_type === 'force' ? '' : 'd-none' %>">
+                    Everyone below the latest version must update. Minimum supported version will be set to the latest version.
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold"><%= platformLabel[platform].store %></label>
+                    <input type="url" name="store_url" class="form-control" value="<%= c.store_url || '' %>"
+                      placeholder="<%= platform === 'ios' ? 'https://apps.apple.com/app/id0000000000' : 'https://play.google.com/store/apps/details?id=…' %>">
+                    <% if (!c.store_url) { %><div class="form-text text-danger">Required before turning the popup on.</div><% } %>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Popup title <span class="text-muted fw-normal">(optional)</span></label>
+                    <input type="text" name="title" class="form-control" maxlength="120" value="<%= c.title || '' %>" placeholder="Update available">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Popup message <span class="text-muted fw-normal">(optional)</span></label>
+                    <textarea name="message" class="form-control" rows="3" maxlength="500" placeholder="Leave empty to use the default message"><%= c.message || '' %></textarea>
+                  </div>
+
+                  <div class="d-flex align-items-center justify-content-between">
+                    <small class="text-muted">Last updated: <%= fmt(c.updated_at) %></small>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Save</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% }) %>
+
+  </div>
+</div>
+
+<%- include('./footer.ejs') %>
+<script>
+  document.querySelectorAll('.update-form').forEach(function (form) {
+    const hint = form.querySelector('.force-hint');
+    form.querySelectorAll('input[name="update_type"]').forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        hint.classList.toggle('d-none', form.querySelector('input[name="update_type"]:checked').value !== 'force');
+      });
+    });
+    form.addEventListener('submit', function (e) {
+      const active = form.querySelector('input[name="is_active"]').checked;
+      const force = form.querySelector('input[name="update_type"]:checked').value === 'force';
+      if (active && force && !confirm('Force update will block every older app until it is updated. Continue?')) {
+        e.preventDefault();
+      }
+    });
+  });
+</script>

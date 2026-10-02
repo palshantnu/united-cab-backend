@@ -26,6 +26,7 @@ const CmsPage = require('./CmsPage')(sequelize, DataTypes);
 const DriverPayoutRequest = require('./DriverPayoutRequest')(sequelize, DataTypes);
 const Notification = require('./Notification')(sequelize, DataTypes);
 const NotificationRead = require('./NotificationRead')(sequelize, DataTypes);
+const AppVersion = require('./AppVersion')(sequelize, DataTypes);
 
 // Bundle models
 const db = {
@@ -51,7 +52,8 @@ const db = {
   CmsPage,
   DriverPayoutRequest,
   Notification,
-  NotificationRead
+  NotificationRead,
+  AppVersion
 };
 fs
   .readdirSync(__dirname)

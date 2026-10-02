@@ -57,6 +57,8 @@ const db = require('./models'); // associations are applied inside models/index.
     await db.DriverPayoutRequest.sync();
     await db.Notification.sync();
     await db.NotificationRead.sync();
+    await db.AppVersion.sync();
+    await require('./services/appVersionService').ensureDefaults();
     await db.sequelize.query(
       "ALTER TABLE driver_transactions MODIFY `type` ENUM('subscription','fare','bonus','penalty','wallet','payout') NOT NULL"
     );

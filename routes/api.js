@@ -6,6 +6,7 @@ const LocationController = require('../controllers/API/LocationController');
 const RideController = require('../controllers/API/RideController');
 const accountcontroller = require('../controllers/accountcontroller');
 const notificationcontroller = require('../controllers/notificationcontroller');
+const appupdatecontroller = require('../controllers/appupdatecontroller');
 const driverProfileUpload = require('../middleware/driverProfileUpload');
 const userProfileUpload = require('../middleware/userprofile');
 
@@ -68,6 +69,9 @@ router.post('/driver/payout-history', accountcontroller.api_payout_history);
 router.post('/notifications', notificationcontroller.api_list);
 router.post('/notifications/unread-count', notificationcontroller.api_unread_count);
 router.post('/notifications/read', notificationcontroller.api_mark_read);
+
+// App update check (user / driver app, android / ios)
+router.post('/app-version/check', appupdatecontroller.api_check);
 
 // Wallet endpoints
 // router.post('/driver/wallet', ApiController.driverwallet);

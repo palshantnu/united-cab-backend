@@ -8,6 +8,7 @@ const bookingcontroller = require('../controllers/bookingcontroller')
 const accountcontroller = require('../controllers/accountcontroller')
 const reportcontroller = require('../controllers/reportcontroller')
 const notificationcontroller = require('../controllers/notificationcontroller')
+const appupdatecontroller = require('../controllers/appupdatecontroller')
 const checkuserauth = require('../middleware/auth');
 const upload = require('../middleware/multer');
 const driverProfileUpload = require('../middleware/driverProfileUpload');
@@ -92,5 +93,8 @@ router.get('/reports/revenue', checkuserauth, reportcontroller.revenue_report);
 router.get('/push-notifications', checkuserauth, notificationcontroller.push_notifications);
 router.post('/push-notifications/send', checkuserauth, notificationcontroller.send_notification);
 router.post('/push-notifications/delete/:id', checkuserauth, notificationcontroller.delete_notification);
+
+router.get('/settings/app-updates', checkuserauth, appupdatecontroller.page);
+router.post('/settings/app-updates/:id', checkuserauth, appupdatecontroller.save);
 
 module.exports=router
