@@ -1083,7 +1083,7 @@ static async driverReport(req, res) {
           completed_rides: completed.length,
           cancelled_rides: cancelled.length,
           total_earnings: Number(total_earnings.toFixed(2)),
-          total_distance_miles: Number((total_distance_km * 0.621371).toFixed(2))
+          total_distance_miles: Number(total_distance_km.toFixed(2))
         };
       }));
 

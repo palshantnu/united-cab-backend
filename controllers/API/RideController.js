@@ -628,7 +628,7 @@ static getRideDetails = async (req, res) => {
 //                     phone: ride.User?.phone,
 //                     booking_type: ride.booking_type,
 //                     scheduled_at: ride.scheduled_at,
-//                     distance_miles: ride.distance_km ? Number((ride.distance_km * 0.621371).toFixed(2)) : 0,
+//                     distance_miles: ride.distance_km ? Number(Number(ride.distance_km).toFixed(1)) : 0,
 //                     fare_estimate: ride.fare_estimate,
 //                     final_fare: ride.final_fare
 //                 });
@@ -725,7 +725,7 @@ static getPendingRequests = async (req, res) => {
                     phone: ride.user?.phone,
                     booking_type: ride.booking_type,
                     scheduled_at: ride.scheduled_at,
-                    distance_miles: ride.distance_km ? Number((ride.distance_km * 0.621371).toFixed(2)) : 0,
+                    distance_miles: ride.distance_km ? Number(Number(ride.distance_km).toFixed(1)) : 0,
                     fare_estimate: ride.fare_estimate,
                     final_fare: ride.final_fare
                 });
@@ -976,7 +976,7 @@ static getPendingRequests = async (req, res) => {
 //                             phone: userdata?.phone || "",
 //                             booking_type: ride.booking_type,
 //                             scheduled_at: ride.scheduled_at,
-//                             distance_miles: ride.distance_km ? Number((ride.distance_km * 0.621371).toFixed(2)) : 0,
+//                             distance_miles: ride.distance_km ? Number(Number(ride.distance_km).toFixed(1)) : 0,
 //                             fare_estimate: ride.fare_estimate,
 //                             final_fare: ride.final_fare
 //                         };
@@ -1002,7 +1002,7 @@ static getPendingRequests = async (req, res) => {
 //                                 booking_type: ride.booking_type ? String(ride.booking_type) : "",
 //                                 scheduled_at: ride.scheduled_at ? String(ride.scheduled_at) : "",
 //                                 distance_km: ride.distance_km != null ? String(ride.distance_km) : "",
-//                                 distance_miles: ride.distance_km ? String((ride.distance_km * 0.621371).toFixed(2)) : "",
+//                                 distance_miles: ride.distance_km ? String(Number(ride.distance_km).toFixed(1)) : "",
 //                                 fare_estimate: ride.fare_estimate != null ? String(ride.fare_estimate) : "",
 //                                 final_fare: ride.final_fare != null ? String(ride.final_fare) : ""
 //                             },
@@ -1104,7 +1104,7 @@ static notifyEligibleDrivers = async (ride, io) => {
                             phone: userdata?.phone || "",
                             booking_type: ride.booking_type,
                             scheduled_at: ride.scheduled_at,
-                            distance_miles: ride.distance_km ? Number((ride.distance_km * 0.621371).toFixed(2)) : 0,
+                            distance_miles: ride.distance_km ? Number(Number(ride.distance_km).toFixed(1)) : 0,
                             fare_estimate: ride.fare_estimate,
                             final_fare: ride.final_fare
                         };
@@ -1125,7 +1125,7 @@ static notifyEligibleDrivers = async (ride, io) => {
                                 booking_type: ride.booking_type ? String(ride.booking_type) : "",
                                 scheduled_at: ride.scheduled_at ? String(ride.scheduled_at) : "",
                                 distance_km: ride.distance_km != null ? String(ride.distance_km) : "",
-                                distance_miles: ride.distance_km ? String((ride.distance_km * 0.621371).toFixed(2)) : "",
+                                distance_miles: ride.distance_km ? String(Number(ride.distance_km).toFixed(1)) : "",
                                 fare_estimate: ride.fare_estimate != null ? String(ride.fare_estimate) : "",
                                 final_fare: ride.final_fare != null ? String(ride.final_fare) : ""
                             },

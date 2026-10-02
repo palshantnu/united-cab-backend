@@ -87,7 +87,7 @@
                                 <div class="row">
                                     <div class="col-6 mb-3">
                                         <div class="info-label">Distance</div>
-                                        <div class="info-value"><%= booking.distance_km ? (booking.distance_km * 0.621371).toFixed(2) : '0.00' %> miles</div>
+                                        <div class="info-value"><%= booking.distance_km ? Number(booking.distance_km).toFixed(1) : '0.00' %> miles</div>
                                     </div>
                                     <div class="col-6 mb-3">
                                         <div class="info-label">Duration</div>
