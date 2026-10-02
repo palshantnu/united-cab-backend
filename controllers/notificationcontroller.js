@@ -119,19 +119,15 @@ class notificationcontroller {
     }
   };
 
-  // POST /api/notifications/read { type, id, notification_id }  or  { type, id, all: true }
+  // POST /api/notifications/read { type, id }                  -> marks ALL pending as read (called when the inbox opens)
+  //                              { type, id, notification_id } -> marks only the given id(s)
   static api_mark_read = async (req, res) => {
     try {
       const p = notificationcontroller.readParams(req);
       if (!p) return res.status(400).json({ success: false, message: "type ('user' or 'driver') and id are required" });
 
-      const all = req.body.all === true || req.body.all === 'true';
       const ids = [].concat(req.body.notification_id || []).map(Number).filter(Boolean);
-      if (!all && !ids.length) {
-        return res.status(400).json({ success: false, message: 'notification_id or all: true is required' });
-      }
-
-      const marked = await markRead(p.type, p.id, all ? 'all' : ids);
+      const marked = await markRead(p.type, p.id, ids.length ? ids : 'all');
       res.json({ success: true, marked, unread_count: await unreadCount(p.type, p.id) });
     } catch (error) {
       console.error('mark read api error:', error);
