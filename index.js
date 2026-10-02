@@ -60,6 +60,10 @@ const db = require('./models'); // associations are applied inside models/index.
     await db.sequelize.query(
       "ALTER TABLE driver_transactions MODIFY `type` ENUM('subscription','fare','bonus','penalty','wallet','payout') NOT NULL"
     );
+    const ridesTable = await db.sequelize.getQueryInterface().describeTable('rides');
+    if (!ridesTable.stops) {
+      await db.sequelize.query('ALTER TABLE rides ADD COLUMN `stops` LONGTEXT NULL AFTER `dropoff_lng`');
+    }
     console.log('📦 Tables ready');
   } catch (err) {
     console.error('❌ DB connection failed:', err);

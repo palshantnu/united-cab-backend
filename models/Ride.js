@@ -13,6 +13,24 @@ module.exports = (sequelize) => {
     pickup_lng: DataTypes.FLOAT,
     dropoff_lat: DataTypes.FLOAT,
     dropoff_lng: DataTypes.FLOAT,
+    // Intermediate stops between pickup and drop, in order:
+    // [{ address, lat, lng, status: 'pending' | 'arrived' | 'completed', arrived_at, completed_at }]
+    stops: {
+      type: DataTypes.TEXT('long'),
+      allowNull: true,
+      get() {
+        const raw = this.getDataValue('stops');
+        if (!raw) return [];
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          return [];
+        }
+      },
+      set(value) {
+        this.setDataValue('stops', Array.isArray(value) && value.length ? JSON.stringify(value) : null);
+      },
+    },
     status: {
       type: DataTypes.ENUM('searching','pending', 'accepted', 'completed', 'cancelled', 'arrived', 'started','rideend'),
       defaultValue: 'pending',

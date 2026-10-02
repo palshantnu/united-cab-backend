@@ -75,6 +75,13 @@
                                     <div class="info-value text-wrap"><%= booking.pickup_address %></div>
                                     <small class="text-muted"><i class="fa fa-map-marker-alt"></i> <%= booking.pickup_lat %>, <%= booking.pickup_lng %></small>
                                 </div>
+                                <% (booking.stops || []).forEach(function(stop, i) { %>
+                                <div class="mb-3 pe-3">
+                                    <div class="info-label">Stop <%= i + 1 %> <span class="badge bg-light text-dark text-capitalize"><%= stop.status %></span></div>
+                                    <div class="info-value text-wrap"><%= stop.address %></div>
+                                    <small class="text-muted"><i class="fa fa-map-pin"></i> <%= stop.lat %>, <%= stop.lng %></small>
+                                </div>
+                                <% }) %>
                                 <div class="mb-3 pe-3">
                                     <div class="info-label">Dropoff Address</div>
                                     <div class="info-value text-wrap"><%= booking.dropoff_address %></div>

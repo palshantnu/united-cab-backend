@@ -9,6 +9,38 @@ const moment = require("moment-timezone");
 
 class RideController {
 
+static MAX_STOPS = 5;
+
+// Validates stops sent by the user app and stores them in route order
+static normalizeStops(stops) {
+  if (stops == null) return [];
+  if (!Array.isArray(stops)) throw new Error('stops must be an array');
+  if (stops.length > RideController.MAX_STOPS) {
+    throw new Error(`Maximum ${RideController.MAX_STOPS} stops allowed`);
+  }
+  return stops.map((stop, i) => {
+    const lat = parseFloat(stop?.lat);
+    const lng = parseFloat(stop?.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      throw new Error(`Invalid location for stop ${i + 1}`);
+    }
+    return { address: String(stop.address || `Stop ${i + 1}`), lat, lng, status: 'pending' };
+  });
+}
+
+// Works for model instances (parsed by getter) and raw rows (JSON string, e.g. scheduler)
+static stopsPayload(ride) {
+  let stops = ride.stops;
+  if (typeof stops === 'string') {
+    try {
+      stops = JSON.parse(stops);
+    } catch (e) {
+      stops = [];
+    }
+  }
+  return (Array.isArray(stops) ? stops : []).map(({ address, lat, lng, status }) => ({ address, lat, lng, status }));
+}
+
 static async getEligibleVehicleIds(requestedVehicleId) {
   const requested = await VehicleType.findByPk(requestedVehicleId, {
     attributes: ['id', 'capacity'],
@@ -132,7 +164,7 @@ static getStatusNotification(status) {
 
 static updateRideStatus = async (req, res) => {
   try {
-    const { driverId, rideId, status, otp } = req.body;
+    const { driverId, rideId, status, otp, stopIndex } = req.body;
     const ride = await Ride.findByPk(rideId, {
       include: [
         {
@@ -305,6 +337,48 @@ static updateRideStatus = async (req, res) => {
       io.to(`ride_${rideId}`).emit('rideStatusUpdate', { status: ride });
       await RideController.sendStatusNotifyToUser('cancelled', user?.devicetoken, ride.id, ride.user_id);
       return res.json({ success: true, status: 'cancelled' });
+    } else if (status === 'stop_arrived' || status === 'stop_completed') {
+      if (ride.status !== 'started') {
+        return res.status(400).json({ error: 'Ride is not in progress' });
+      }
+      const stops = ride.stops;
+      const index = Number(stopIndex);
+      const stop = Number.isInteger(index) ? stops[index] : null;
+      if (!stop) {
+        return res.status(400).json({ error: 'Invalid stop' });
+      }
+      if (stops.slice(0, index).some(s => s.status !== 'completed')) {
+        return res.status(400).json({ error: 'Please complete previous stops first' });
+      }
+
+      if (status === 'stop_arrived') {
+        if (stop.status !== 'pending') {
+          return res.status(400).json({ error: 'Already arrived at this stop' });
+        }
+        stop.status = 'arrived';
+        stop.arrived_at = new Date();
+      } else {
+        if (stop.status !== 'arrived') {
+          return res.status(400).json({ error: 'Mark arrival at this stop first' });
+        }
+        stop.status = 'completed';
+        stop.completed_at = new Date();
+      }
+      ride.stops = stops;
+      await ride.save();
+
+      io.to(`ride_${rideId}`).emit('rideStatusUpdate', { status: ride });
+      if (status === 'stop_arrived') {
+        await RideController.sendPushNotification(
+          user?.devicetoken,
+          `Arrived at Stop ${index + 1} 📍`,
+          `Driver has reached ${stop.address}`,
+          { rideId: ride.id.toString(), status, stopIndex: String(index) },
+          'user',
+          ride.user_id
+        );
+      }
+      return res.json({ success: true, status, stopIndex: index, stops: ride.stops });
     } else {
       return res.status(400).json({ error: 'Invalid status provided' });
     }
@@ -391,6 +465,7 @@ static getRideDetails = async (req, res) => {
                 'driver_id',
                 'pickup_address',
                 'dropoff_address',
+                'stops',
                 'status',
                 'fare_estimate',
                 'final_fare',
@@ -726,6 +801,7 @@ static getPendingRequests = async (req, res) => {
                     booking_type: ride.booking_type,
                     scheduled_at: ride.scheduled_at,
                     distance_miles: ride.distance_km ? Number(Number(ride.distance_km).toFixed(1)) : 0,
+                    stops: RideController.stopsPayload(ride),
                     fare_estimate: ride.fare_estimate,
                     final_fare: ride.final_fare
                 });
@@ -1105,6 +1181,7 @@ static notifyEligibleDrivers = async (ride, io) => {
                             booking_type: ride.booking_type,
                             scheduled_at: ride.scheduled_at,
                             distance_miles: ride.distance_km ? Number(Number(ride.distance_km).toFixed(1)) : 0,
+                            stops: RideController.stopsPayload(ride),
                             fare_estimate: ride.fare_estimate,
                             final_fare: ride.final_fare
                         };
@@ -1126,6 +1203,7 @@ static notifyEligibleDrivers = async (ride, io) => {
                                 scheduled_at: ride.scheduled_at ? String(ride.scheduled_at) : "",
                                 distance_km: ride.distance_km != null ? String(ride.distance_km) : "",
                                 distance_miles: ride.distance_km ? String(Number(ride.distance_km).toFixed(1)) : "",
+                                stops_count: String(RideController.stopsPayload(ride).length),
                                 fare_estimate: ride.fare_estimate != null ? String(ride.fare_estimate) : "",
                                 final_fare: ride.final_fare != null ? String(ride.final_fare) : ""
                             },
@@ -1158,8 +1236,15 @@ static requestRide = async (req, res) => {
             userId, pickupLat, pickupLng, dropoffLat, dropoffLng,
             vehicleTypeId, dropoff_address, pickup_address,
             fare_estimate, final_fare, distance_km,
-            booking_type, scheduled_at, timezone
+            booking_type, scheduled_at, timezone, stops
         } = req.body;
+
+        let rideStops;
+        try {
+            rideStops = RideController.normalizeStops(stops);
+        } catch (err) {
+            return res.status(400).json({ success: false, message: err.message });
+        }
 
         const user = await User.findByPk(userId);
         if (!user) {
@@ -1195,6 +1280,7 @@ static requestRide = async (req, res) => {
             vehicle_id: vehicleTypeId,
             dropoff_address,
             pickup_address,
+            stops: rideStops,
             status: 'pending',
             booking_type: booking_type || 'instant',
             scheduled_at: finalScheduledTime,
