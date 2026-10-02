@@ -1562,7 +1562,7 @@ static ride_history = async (req, res) => {
                             { model: VehicleType, attributes: ['type_name'] }
                         ]
                     },
-                    { model: User, attributes: ['name', 'email'] },
+                    { model: User, as: 'user', attributes: ['name', 'email'] },
                     { 
                         model: Rating_Reviews,
                         attributes: ['rated_by_driver', 'rated_by_user', 'reviewed_by_user', 'reviewed_by_driver']
@@ -1801,6 +1801,7 @@ static userride_history = async (req, res) => {
                 },
                 {
                     model: User,
+                    as: 'user',
                     attributes: ['name', 'email']
                 },
                 {
