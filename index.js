@@ -74,6 +74,9 @@ const db = require('./models'); // associations are applied inside models/index.
 
 const server = http.createServer(app);
 const io = new Server(server, {
+  // Faster dead-connection detection on mobile networks (defaults are 25s + 20s)
+  pingInterval: 10000,
+  pingTimeout: 10000,
   cors: {
     origin: "*",
     methods: ["GET", "POST"]
